@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import { Input } from 'antd';
+const Search = Input.Search;
 
 class Home extends Component {
     constructor(props) {
@@ -8,8 +10,12 @@ class Home extends Component {
     render() {
         return (
             <div>
-                <h2>Home</h2>
-                <b>Status:</b> {this.props.runstate}
+                 <Search
+                    placeholder="Title, description..."
+                    enterButton="Search"
+                    size="large"
+                    onSearch={value => console.log(value)}
+                    />
             </div>
         )
     }    

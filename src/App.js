@@ -8,9 +8,14 @@ import { store } from './redux/store';
 
 import { RepoRouter } from './router';
 import { Sidebar } from './sidebar'
+import { SideMenu } from './components/sideMenu'
+import { UserState } from './components/userState'
+import { TiersState } from './components/tiersState'
+import { SearchBar } from './components/searchBar'
 import { Link, BrowserRouter as Router } from 'react-router-dom';
 import { Layout, Menu, Icon } from 'antd';
-const { Header, Sider, Content } = Layout;
+const { Header, Sider, Content, Footer } = Layout;
+
 
 class App extends Component {
   
@@ -29,47 +34,37 @@ class App extends Component {
       <Provider store={store}>
         <Router>
           <Layout>
-            <Header style={{width: '100%', lineHeight: '20px', height: 'auto', padding: '5px', textAlign: 'right', background: '#f4f4f4'}} >
-            <Icon type="minus"/> <Icon type="close"/>
-            </Header>
             <Layout>
               <Sider
                 trigger={null}
+                theme="light"
                 collapsible
                 collapsed={this.state.collapsed}
               >
                 <div className="logo">
                     <Icon type="copy" />
                 </div>
-                <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
-                  <Menu.Item key="1">
-                    <Link to={'/'}>
-                      <Icon type="video-camera"/>
-                      <span>Navigate</span>
-                    </Link>
-                  </Menu.Item>
-                  <Menu.Item key="2">
-                    <Link to={'/upload'}>
-                      <Icon type="upload" />
-                      <span>Upload</span>
-                    </Link>
-                  </Menu.Item>
-                </Menu>
+                <SideMenu />
               </Sider>
               <Layout>
-                <Header style={{ background: '#fff', padding: 0}}>
+                <Header style={{ background: '#fff', padding: 0, display: 'flex', alignItems: 'center'}}>
                   <Icon
                     className="trigger"
                     type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
                     onClick={this.toggle}
                   />
+                  <SearchBar />
+                  <UserState />
                 </Header>
-                <Content style={{ overflowY: 'scroll', margin: '24px 16px', padding: 24, background: '#fff', minHeight: 'calc( 100vh - 145px)' }}>
+                <Content style={{ overflowY: 'scroll', margin: '24px 16px', padding: 24, background: '#fff', height: 'calc( 100vh - 145px)' }}>
                   <Sidebar />
                   <RepoRouter />
                 </Content>
               </Layout>
             </Layout>
+            <Footer style={{ padding: '6px 24px', background: '#131313', color: '#fff'}}>
+              <TiersState />
+            </Footer>
           </Layout>
         </Router>
       </Provider>

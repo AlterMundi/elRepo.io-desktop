@@ -14,11 +14,14 @@ const url = require('url')
 //Api
 const {socket} = require('./src/socket/socket')
 
+// Keep a global reference of the window object, if you don't, the window will
+// be closed automatically when the JavaScript object is garbage collected.
+let mainWindow
+
 //Connect api to socket and redux  
 const api = socket()
-setTimeout(() => { api.connect() }, 1000)
-ipcMain.on('api', (event,arg) => {
-    console.log(event, arg)
+api.connect()
+ipcMain.on('api', (event,arg) => {   
     api.request(arg.payload.path, arg.payload.data)
         .then(res => {
             if(res.returncode !== 'fail')
@@ -29,8 +32,20 @@ ipcMain.on('api', (event,arg) => {
         .catch(err => event.sender.send('api-reply', {type: arg.type+'_FAILD', payload: err}))
 })
 
+
+setInterval(()=>{
+    api.request('/control/runstate/')
+        .then(res => {
+            if(res.returncode !== 'fail')
+                mainWindow.webContents.send('api-reply', {type: 'RUNSTATE_SUCCESS', payload: res})
+            else 
+                mainWindow.webContents.send('api-reply', {type: 'RUNSTATE_FAILD', payload: res})
+        })
+        .catch(err => mainWindow.webContents.send('api-reply', {type: 'RUNSTATE_FAILD', payload: err}))        
+}, 4000)
+
 //Listen events
-/* api.emmiter.on('event', (data) => {
+api.emmiter.on('event', (data) => {
     if (data.action === 'connect') {
         console.log('connect')
         api.request('/control/locations/', {})
@@ -39,17 +54,21 @@ ipcMain.on('api', (event,arg) => {
         })    
         .catch(e => console.log('error', e))
     }
-})*/
-
-
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
+    else {
+        console.log('SOCKET EVENT', data)
+    }
+})
 
 function createWindow() {
 
     // Create the browser window.
-    mainWindow = new BrowserWindow({width: 800, height: 600, frame: false})
+    mainWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        webPreferences: {
+            webSecurity: false
+        }
+    })
     mainWindow.setMenu(null);
 
     // and load the index.html of the app.

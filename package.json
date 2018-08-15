@@ -8,12 +8,14 @@
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
     "react-redux": "^5.0.7",
+    "react-router": "^4.3.1",
     "react-router-dom": "^4.2.2",
     "react-router-redux": "^4.0.8",
     "react-scripts": "1.1.4",
     "redux": "^4.0.0",
     "redux-saga": "^0.16.0",
-    "uuid": "^3.2.1"
+    "redux-thunk": "^2.2.0",
+    "uuid": "^3.3.0"
   },
   "homepage": "./",
   "main": "electron-starter.js",
@@ -38,5 +40,6 @@
   },
   "build": {
     "appId": "net.altermundi.repo"
-  }
+  },
+  "theme": "./src/theme.js"
 }

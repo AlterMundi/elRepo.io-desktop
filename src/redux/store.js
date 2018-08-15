@@ -4,13 +4,14 @@ import { routerReducer, routerMiddleware } from 'react-router-redux';
 import createSagaMiddleware from 'redux-saga';
 import reducers from './reducers';
 import rootSaga from './sagas';
+import thunk from 'redux-thunk';
 
 const { ipcRenderer } = window.require("electron");
 
 const history = createHistory();
 const sagaMiddleware = createSagaMiddleware();
 const routeMiddleware = routerMiddleware(history);
-const middlewares = [sagaMiddleware, routeMiddleware];
+const middlewares = [thunk, sagaMiddleware, routeMiddleware];
 
 const composeEnhancers =
   typeof window === 'object' &&

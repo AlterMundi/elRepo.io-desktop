@@ -9,8 +9,8 @@ class tiersStateComponent extends Component {
     }
 
     render() {
-        const stateToColor = (runstate) => {
-            switch(runstate) {
+        const stateToColor = (state_string) => {
+            switch(state_string) {
                 case 'online':
                     return 'green'
                 default:

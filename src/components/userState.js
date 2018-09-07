@@ -11,11 +11,9 @@ class userStateComponent extends Component {
     render() {
         const stateToColor = (runstate) => {
             switch(runstate) {
-                case 'running_ok':
+                case true:
                     return 'green'
-                case 'waiting_account_select':
-                    return 'yellow'
-                case 'waiting_startup':
+                case false:
                     return 'yellow'
                 default:
                     return 'red'

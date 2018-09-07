@@ -11,13 +11,13 @@ import Search from './containers/search'
 
  class RepoRouterClass extends Component {
     
-    componentWillReceiveProps(nextProps) {
-        console.log(nextProps.runstate === 'running_ok',typeof this.props.user === 'undefined')
-        if (nextProps.runstate === 'running_ok' && typeof this.props.user === 'undefined') {
+    /* componentWillReceiveProps(nextProps) {
+        console.log(nextProps.runstate === true ,typeof this.props.user === 'undefined')
+        if (nextProps.runstate === true && typeof this.props.user === 'undefined') {
             console.log('refech user', nextProps.runstate, this.props.user)
             this.props.fetchUser();
         }
-    }
+    } */
 
     render() {
         console.log('ROUTER',this.props)
@@ -38,7 +38,7 @@ import Search from './containers/search'
 })
 
 const dispatchToProps = (dispatch) => ({
-    fetchUser: bindActionCreators(apiActions.checkUser, dispatch)
+    //fetchUser: bindActionCreators(apiActions.checkUser, dispatch)
 })
 
  export const RepoRouter = connect(mapStateToProps, dispatchToProps)(RepoRouterClass)

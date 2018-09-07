@@ -36,7 +36,9 @@
     "electron": "^2.0.0",
     "electron-builder": "^20.13.3",
     "electron-devtools-installer": "^2.2.4",
-    "foreman": "^2.0.0"
+    "foreman": "^2.0.0",
+    "node-fetch": "^2.2.0",
+    "socket.io": "^2.1.1"
   },
   "build": {
     "appId": "net.altermundi.repo"

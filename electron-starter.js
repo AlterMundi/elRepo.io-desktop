@@ -14,13 +14,19 @@ const url = require('url')
 //Api
 const {socket} = require('./src/socket/socket')
 
+//Http Api
+const httpApi = require('./src/httpApi')
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
 //Connect api to socket and redux  
-const api = socket()
-api.connect()
+//const api = socket()
+//api.connect()
+
+const api = httpApi('http://localhost:',9092)
+
 ipcMain.on('api', (event,arg) => {   
     api.request(arg.payload.path, arg.payload.data)
         .then(res => {
@@ -44,20 +50,6 @@ setInterval(()=>{
         .catch(err => mainWindow.webContents.send('api-reply', {type: 'RUNSTATE_FAILD', payload: err}))        
 }, 4000)
 
-//Listen events
-api.emmiter.on('event', (data) => {
-    if (data.action === 'connect') {
-        console.log('connect')
-        api.request('/control/locations/', {})
-        .then(data => {
-            console.log('locations', data)
-        })    
-        .catch(e => console.log('error', e))
-    }
-    else {
-        console.log('SOCKET EVENT', data)
-    }
-})
 
 function createWindow() {
 

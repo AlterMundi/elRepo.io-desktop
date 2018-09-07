@@ -6,7 +6,15 @@ import reducers from './reducers';
 import rootSaga from './sagas';
 import thunk from 'redux-thunk';
 
-const { ipcRenderer } = window.require("electron");
+let ipcRenderer = {
+  send: ()=> new Promise.resolve('fake ipc rednerer')
+}
+
+try {
+  ipcRenderer = window.require('electron').ipcRenderer;
+} catch (e) {
+  console.log('In browser')
+}
 
 const history = createHistory();
 const sagaMiddleware = createSagaMiddleware();
@@ -32,7 +40,7 @@ const store = createStore(
 );
 
 //Listen electorn ipcMain
-if (typeof ipcRenderer !== 'undefined')
+if (typeof ipcRenderer.on !== 'undefined')
   ipcRenderer.on('api-reply',(event, args) => store.dispatch(args))
 
 

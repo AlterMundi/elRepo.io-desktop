@@ -11,7 +11,11 @@ class tiersStateComponent extends Component {
     render() {
         const stateToColor = (state_string) => {
             switch(state_string) {
-                case 'online':
+                case 1:
+                    return 'yellow'
+                case 2:
+                    return 'green'
+                case 4:
                     return 'green'
                 default:
                     return 'red'
@@ -21,8 +25,8 @@ class tiersStateComponent extends Component {
             <div style={{float: 'right', marginRight: '24px'}}>
                 <span>Global connections: </span>
                 { this.props.peers.map(peer => (
-                        <Badge dot key={peer.pgp_id} style={{backgroundColor: stateToColor(peer.state_string), marginRight:'10px'}}>
-                            <span style={{color: '#fff'}}>{peer.locations[0].name}</span>
+                        <Badge dot key={peer.id} style={{backgroundColor: stateToColor(peer.connectState), marginRight:'10px'}}>
+                            <span style={{color: '#fff'}}>{peer.name}</span>
                         </Badge>
                 ))}
             </div>
@@ -32,7 +36,7 @@ class tiersStateComponent extends Component {
 
 export const TiersState = connect(
     (state)=>({
-        peers: state.Api.peers || []
+        peers: state.Api.peersData || []
     }),
     (dispatch)=>({
 

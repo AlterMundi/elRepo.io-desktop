@@ -49,6 +49,15 @@ export const actions = {
         }
     },
 
+    loadExtraData:(channelId) => (dispatch) => {
+        dispatch({
+            type: 'LOADCHANNEL_EXTRADATA',
+            payload: {
+                channels: [channelId]
+            }
+        })
+    },
+
     joinTier1: (payload) => (dispatch, getState) => {
         dispatch({
             type: actions.JOIN_TIER,

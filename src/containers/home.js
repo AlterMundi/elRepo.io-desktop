@@ -2,10 +2,14 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Card, Avatar  } from 'antd';
 import { bindActionCreators } from 'redux';
-import apiActions from '../redux/api/actions';
+import apiActions from '../redux/api/actions-v1';
 import { search } from '../redux/api/sagas';
+import VisibilitySensor from 'react-visibility-sensor';
 
 const Meta = Card.Meta;
+
+const trunc = (n, text) =>
+        (text.length > n) ? text.substr(0, n-1) + '...' : text;
 
 class Home extends Component {
     constructor(props) {
@@ -18,6 +22,14 @@ class Home extends Component {
         this.timer = setInterval(()=>{
             this.props.updateChannels();
         },30000)
+    }
+
+    checkExtraData(channel, channelInfo) {
+        return (state) => {
+            if (state === true && !channelInfo) {
+                this.props.loadExtraData(channel.mGroupId)
+            }
+        }
     }
 
     render() {
@@ -42,16 +54,18 @@ class Home extends Component {
                   }
                   <h2 style={{fontWeight:'300'}}>Channels</h2>
                   {this.props.channels.map(channel => (
-                    <Card 
-                        key={channel.channel_id}
-                        style={{marginBottom: '15px'}}
-                    >
-                        <Meta
-                            avatar={<Avatar src={ 'data:image/png;base64,' + channel.thumbnail_base64_png} />}
-                            title={channel.name}
-                            description={channel.description}
-                        />
-                    </Card>
+                    <VisibilitySensor partialVisibility={true} onChange={this.checkExtraData(channel, this.props.channelsInfo[channel.mGroupId])}>
+                        <Card 
+                            key={channel.channel_id}
+                            style={{marginBottom: '15px'}}
+                        >
+                            <Meta
+                                avatar={<Avatar src={ this.props.channelsInfo[channel.mGroupId]? 'data:image/png;base64,' + this.props.channelsInfo[channel.mGroupId].mImage.mData: false } />}
+                                title={channel.mGroupName}
+                                description={this.props.channelsInfo[channel.mGroupId]? trunc(140, this.props.channelsInfo[channel.mGroupId].mDescription): false}
+                            />
+                        </Card>
+                    </VisibilitySensor>
                   ))}
             </div>
         )
@@ -61,12 +75,14 @@ class Home extends Component {
 const mapStateToProps = (state) => ({
     cert: state.Api.cert,
     channels: state.Api.channels,
+    channelsInfo: state.Api.channelsInfo,
     search: state.Api.search,
     results: state.Api.results
 })
 
 const dispatchToProps = (dispatch) => ({
     updateChannels: bindActionCreators(apiActions.updateChannels, dispatch),
+    loadExtraData: bindActionCreators(apiActions.loadExtraData, dispatch),
     getResults: bindActionCreators(apiActions.updateSearchResults, dispatch)
 })
   

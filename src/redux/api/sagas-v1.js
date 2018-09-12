@@ -107,7 +107,7 @@ export const user = function*() {
     yield takeEvery(actions.CREATE_ACCOUNT, function*(action){
         const username = uuidv1() + '_repo';
         yield ipcRenderer.send('api', {
-            type: actions.LOGIN,
+            type: actions.CREATE_ACCOUNT,
             payload: {
                 path: '/rsLoginHelper/createLocation',
                 data: {
@@ -115,10 +115,17 @@ export const user = function*() {
                         mPpgName: username,
                         mLocationName: username
                     },
-                    password: '0000'
+                    password: '0000',
+                    makeHidden: false,
+                    makeAutoTor: false
                 },
             }
         })
+    })
+
+
+    yield takeEvery(actions.CREATE_ACCOUNT_SUCCESS, function*(action){
+        yield put({ type: 'QUERY_LOCATIONS'})
     })
 
     yield takeEvery(actions.LOGIN, function*(action) {
@@ -175,7 +182,19 @@ export const channels = function*() {
         yield ipcRenderer.send('api', {
             type: 'LOADCHANNELS',
             payload: {
-                path: '/rsGxsChannels/getChannelsInfo'
+                path: '/rsGxsChannels/getChannelsSummaries'
+            }
+        })
+    })
+
+    yield takeEvery('LOADCHANNEL_EXTRADATA', function*(action) {
+        yield ipcRenderer.send('api', {
+            type: 'LOADCHANNEL_EXTRADATA',
+            payload: {
+                path: '/rsGxsChannels/getChannelsInfo',
+                data: {
+                    chanIds: action.payload.channels
+                }
             }
         })
     })
@@ -206,6 +225,43 @@ export const peers = function*() {
             }
         })
     })
+
+    yield takeEvery('PEERS_SUCCESS', function*(action){
+        const sslIds = action.payload.sslIds || [];
+        if(sslIds.length > 0) {
+            let i = 0;
+            while(i < sslIds.length){
+                yield put({type: 'LOADPEER_INFO', payload: {id: sslIds[i]}});
+                i++;
+            }
+        }
+        return;
+    })
+
+    yield takeEvery('LOADPEER_INFO', function*(action){
+        yield ipcRenderer.send('api', {
+            type: 'LOADPEER_INFO',
+            payload: {
+                path: '/rsPeers/getPeerDetails',
+                data: {
+                    sslId: action.payload.id
+                }
+            }
+        })
+    })
+
+
+   /*  yield takeEvery('LOADPEER_INFO_SUCCESS', function*(action){
+        yield ipcRenderer.send('api', {
+            type: 'PEER_STATUS',
+            payload: {
+                path: '/rsPeers/isOnline',
+                data: {
+                    sslId: action.payload.det.id
+                }
+            }
+        })
+    }) */
 
     let joinTier = 0;
     yield takeEvery('PEERS_SUCCESS', function*(action){

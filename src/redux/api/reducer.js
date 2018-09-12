@@ -1,5 +1,12 @@
 import actions from "./actions";
 
+const infoToObj = (channelsArray) => {
+    return channelsArray
+        .map(channelData => ({[channelData.mMeta.mGroupId]: channelData}))
+        .reduce((prev, act) => ({...prev, ...act}),{})
+    
+}
+
 const initState = {
     login: false,
     runstate: null,
@@ -7,7 +14,8 @@ const initState = {
     cert: null,
     search: [],
     results: [],
-    searchId: ''
+    searchId: '',
+    channelsInfo: {}
 }
 
 export default function apiReducer(state = initState, action) {
@@ -32,7 +40,15 @@ export default function apiReducer(state = initState, action) {
         case 'PEERS_SUCCESS': {
             return {
                 ...state,
-                peers: (typeof action.payload.sslIds !== 'undefined' && action.payload.sslIds.length > 0)? action.payload.sslIds: []
+                peers: (typeof action.payload.sslIds !== 'undefined' && action.payload.sslIds.length > 0)? action.payload.sslIds.map(x => ({id: x })): []
+            }
+        }
+        case 'LOADPEER_INFO_SUCCESS': {
+            return {
+                ...state,
+                peersData: state.peers.map(peer => {
+                    return (peer.id === action.payload.det.id)? action.payload.det: peer;
+                })
             }
         }
         case 'QUERY_LOCATIONS_SUCCESS':
@@ -54,8 +70,19 @@ export default function apiReducer(state = initState, action) {
             console.log(action.payload)
             return {
                 ...state,
-                channels: action.payload.channelsInfo || []
+                channels: action.payload.channels || []
             }
+        case 'LOADCHANNEL_EXTRADATA_SUCCESS': {
+            return {
+                ...state,
+                channelsInfo: {
+                    ...state.channelsInfo,
+                    ...infoToObj(action.payload.channelsInfo)
+                }
+            }
+        }
+        
+            
         case 'GET_SELF_CERT_SUCCESS': 
             return {
                 ...state,

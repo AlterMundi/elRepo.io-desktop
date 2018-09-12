@@ -3,7 +3,7 @@ import httpApi from '../../../httpApi';
 import { store } from '../../../redux/store';
 import config from '../../../config';
 
-const apiHttp = httpApi('http://localhost',9092);
+const apiHttp = httpApi('http://localhost',8080 );
 
 let ipcRenderer = {
     send: (version, request) => new Promise((res, rej) => {

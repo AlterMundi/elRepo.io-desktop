@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { Input } from 'antd'
-import actions from '../redux/api/actions-v1'
+import actions from '../redux/api/actions'
 
 const Search = Input.Search
 

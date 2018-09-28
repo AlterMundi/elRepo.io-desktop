@@ -5,7 +5,7 @@ import config from '../../config';
 import httpApi from '../../httpApi';
 import { store } from '../../redux/store';
 
-const apiHttp = httpApi('http://localhost',9092);
+const apiHttp = httpApi(config.api.url,config.api.port);
 
 // util function -> take only once
 function* takeFirst(pattern, saga, ...args) {

@@ -2,7 +2,7 @@ import { takeEvery, put } from 'redux-saga/effects'
 import httpApi from '../../../httpApi';
 import config from '../../../config';
 
-const apiHttp = httpApi('http://localhost',9092);
+const apiHttp = httpApi(config.api.url,config.api.port);
 
 export const joinTiers = function*() {
     yield takeEvery('JOIN_TIER', function*(action){        

@@ -1,4 +1,8 @@
 export default {
+    api: {
+        url: 'http://localhost',
+        port: 9092
+    },
     tiers1: [{
         name: '',
         url: 'http://emiliocanzi.nsupdate.info/api/v2/peers',

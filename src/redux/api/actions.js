@@ -49,6 +49,15 @@ export const actions = {
         }
     },
 
+    loadExtraData:(channelId) => (dispatch) => {
+        dispatch({
+            type: 'LOADCHANNEL_EXTRADATA',
+            payload: {
+                channels: [channelId]
+            }
+        })
+    },
+
     joinTier1: (payload) => (dispatch, getState) => {
         dispatch({
             type: actions.JOIN_TIER,
@@ -59,6 +68,10 @@ export const actions = {
                 user: (!payload.remote  )? payload.user: getState().Api.user.name
             }
         })
+    },
+
+    newSearch: (payload) => dispatch => {
+        dispatch({type: 'SEARCH_NEW', payload})
     }
 }
 

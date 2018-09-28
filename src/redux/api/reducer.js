@@ -12,9 +12,8 @@ const initState = {
     runstate: null,
     channels: [],
     cert: null,
-    search: [],
+    search: null,
     results: [],
-    searchId: '',
     channelsInfo: {}
 }
 
@@ -82,39 +81,21 @@ export default function apiReducer(state = initState, action) {
             }
         }
         
-            
         case 'GET_SELF_CERT_SUCCESS': 
             return {
                 ...state,
                 cert: action.payload.retval
             }
-        case 'SEARCH_GET_ACTIVES_SUCCESS':
+        case 'SEARCH_NEW':
             return {
                 ...state,
-                search: action.payload.data,
-                searchId: (state.searchId === '' && action.payload.data.length > 0)? action.payload.data[0].id: state.searchId
+                search: action.payload,
+                results:[]
             }
         case 'SEARCH_GET_RESULTS_SUCCESS':
             return {
                 ...state,
-                results: {
-                    ...state.results,
-                    [state.searchId]: action.payload.data || []
-                },
-                searchId: (typeof state.search.map(x => x.id)[state.search.map(x => x.id).indexOf(state.searchId)+1] !== 'undefined')? state.search[state.search.map(x => x.id).indexOf(state.searchId)+1].id: state.search[0].id
-            }
-        case 'SEARCH_NEW_SUCCESS':
-            return {
-                ...state,
-                results: {
-                    ...state.results,
-                    [action.payload.data.search_id]: []
-                }
-            }
-        case 'SEARCH_GET_RESULTS':
-            return {
-                ...state,
-                //searchId: action.payload || state.searchId
+                results: state.results.concat(action.payload.results || [])
             }
         default:
             return state;

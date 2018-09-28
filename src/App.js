@@ -11,7 +11,7 @@ import { UserState } from './components/userState'
 import { TiersState } from './components/tiersState'
 import { SearchBar } from './components/searchBar'
 import { ConnectedRouter } from "react-router-redux";
-import { Layout, Menu, Icon } from 'antd';
+import { Layout, Icon } from 'antd';
 const { Header, Sider, Content, Footer } = Layout;
 
 

@@ -1,13 +1,9 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
 import { Avatar, Badge } from 'antd'
 
 class userStateComponent extends Component {
-    constructor(props) {
-        super(props)
-    }
-
+    
     render() {
         const stateToColor = (runstate) => {
             switch(runstate) {

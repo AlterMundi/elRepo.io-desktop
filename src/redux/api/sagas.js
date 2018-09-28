@@ -1,4 +1,4 @@
-import { all, call, select, takeEvery, take, put, race, fork } from 'redux-saga/effects';
+import { call, select, takeEvery, take, put, race } from 'redux-saga/effects';
 import actions from './actions';
 import uuidv1 from 'uuid/v1';
 import config from '../../config';
@@ -7,17 +7,6 @@ import { store } from '../../redux/store';
 import { apiCall } from '../../helpers/apiWrapper'
 
 const apiHttp = httpApi(config.api.url,config.api.port);
-
-// util function -> take only once
-function* takeFirst(pattern, saga, ...args) {
-    const task = yield fork(function* () {
-        while(true) {
-            const action = yield take(pattern);
-            yield call(saga, ...args.concat(action));
-        }
-    });
-    return task;
-}
 
 // wait :: Number -> Promise
 const wait = ms => (
@@ -195,23 +184,6 @@ export const peers = function*() {
 
 export const search = function*(){
     yield takeEvery('START_SYSTEM' , function*(){
-        return;
-        yield wait(342);
-        yield put({type: 'SEARCH_GET_RESULTS'})
-        while(true) {
-            const winner = yield race({
-                stopped: take('SEARCH_ALL_STOP'),
-                tick: call(wait, 1299)
-            })
-
-            if (!winner.stopped) {
-                yield put({type: 'SEARCH_GET_ACTIVES'})
-                yield call(wait, 199)
-                yield put({type: 'SEARCH_GET_RESULTS'})
-            } else {
-                break
-            }
-        }
     })
 
     let resultSockets = null;

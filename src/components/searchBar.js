@@ -7,9 +7,6 @@ import actions from '../redux/api/actions'
 const Search = Input.Search
 
 class SearchBarComponent extends Component {
-    constructor(props) {
-        super(props)
-    }
 
     render() {
         return (
@@ -24,9 +21,7 @@ class SearchBarComponent extends Component {
 }
 
 export const SearchBar = connect(
-    (state)=>({
-        
-    }),
+    ()=>({}),
     (dispatch)=>({
         newSearch: bindActionCreators(actions.newSearch, dispatch)
     })

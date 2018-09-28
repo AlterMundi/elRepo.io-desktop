@@ -15,7 +15,7 @@ class Home extends Component {
     constructor(props) {
         super(props)
         this.state = {}
-        this.timer;
+        this.timer = null;
     }
 
     componentDidMount() {

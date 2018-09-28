@@ -1,5 +1,3 @@
-import actions from "./actions";
-
 const infoToObj = (channelsArray) => {
     return channelsArray
         .map(channelData => ({[channelData.mMeta.mGroupId]: channelData}))

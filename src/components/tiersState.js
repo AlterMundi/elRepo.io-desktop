@@ -1,13 +1,9 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
-import { Avatar, Badge } from 'antd'
+import { Badge } from 'antd'
 
 class tiersStateComponent extends Component {
-    constructor(props) {
-        super(props)
-    }
-
+    
     render() {
         const stateToColor = (state_string) => {
             switch(state_string) {

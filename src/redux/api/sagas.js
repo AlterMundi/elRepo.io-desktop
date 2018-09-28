@@ -4,6 +4,7 @@ import uuidv1 from 'uuid/v1';
 import config from '../../config';
 import httpApi from '../../httpApi';
 import { store } from '../../redux/store';
+import { apiCall } from '../../helpers/apiWrapper'
 
 const apiHttp = httpApi(config.api.url,config.api.port);
 
@@ -37,27 +38,15 @@ export const user = function*() {
     })
 
     yield takeEvery('CONNECT', function*(){
-        yield apiHttp.send('api', {
-            type: 'CHECK_LOGGIN',
-            payload: {
-                path: '/rsLoginHelper/isLoggedIn'
-            }
-        })
+        yield apiCall('CHECK_LOGGIN', '/rsLoginHelper/isLoggedIn')
     })
 
-    yield takeEvery(['CHECK_LOGGIN_SUCCESS','QUERY_LOCATIONS'], function*(action){
-        const result = yield apiHttp.send('api', {
-            type: 'QUERY_LOCATIONS',
-            payload: {
-                path: '/rsLoginHelper/getLocations',
-                method: 'GET'
-            }
-        })
+    yield takeEvery(['CHECK_LOGGIN_SUCCESS','QUERY_LOCATIONS'], function*(){
+        yield apiCall('QUERY_LOCATIONS','/rsLoginHelper/getLocations')
     })
 
     yield takeEvery('QUERY_LOCATIONS_SUCCESS', function*(action) {
         const isLogged = yield select(state => state.Api.runstate === true);
-
         //Si no hay cuentas crear una
         if(action.payload.locations.length === 0)
             yield put({type: actions.CREATE_ACCOUNT})
@@ -71,58 +60,42 @@ export const user = function*() {
 
     yield takeEvery(actions.CREATE_ACCOUNT, function*(action){
         const username = uuidv1() + '_repo';
-        yield apiHttp.send('api', {
-            type: actions.CREATE_ACCOUNT,
-            payload: {
-                path: '/rsLoginHelper/createLocation',
-                data: {
-                    location: {
-                        mPpgName: username,
-                        mLocationName: username
-                    },
-                    password: '0000',
-                    makeHidden: false,
-                    makeAutoTor: false
+        yield apiCall(
+            actions.CREATE_ACCOUNT,
+            '/rsLoginHelper/createLocation',
+            {
+                location: {
+                    mPpgName: username,
+                    mLocationName: username
                 },
+                password: '0000',
+                makeHidden: false,
+                makeAutoTor: false
             }
-        })
+        )
     })
-
 
     yield takeEvery(actions.CREATE_ACCOUNT_SUCCESS, function*(action){
         yield put({ type: 'QUERY_LOCATIONS'})
     })
 
     yield takeEvery(actions.LOGIN, function*(action) {
-        yield apiHttp.send('api', {
-            type: actions.LOGIN,
-            payload: {
-                path: '/rsLoginHelper/attemptLogin',
-                data: {
-                    account: action.payload.mLocationId,
-                    password: '0000'
-                }
-            }
+        yield apiCall(actions.LOGIN,'/rsLoginHelper/attemptLogin', {
+            account: action.payload.mLocationId,
+            password: '0000'
         })
     });
 
     yield takeEvery(['LOGIN_SUCCESS','GET_SELF_CERT'], function*(){
         const userId = yield select(state => state.Api.user.mLocationId)
-        yield apiHttp.send('api', {
-            type: 'GET_SELF_CERT',
-            payload: {
-                path: '/rsPeers/GetRetroshareInvite',
-                data: {
-                    sslId: userId
-                }
-            }
+        yield apiCall('GET_SELF_CERT','/rsPeers/GetRetroshareInvite',{
+            sslId: userId
         })
     })
 
     yield takeEvery(actions.LOGIN_SUCCESS, function*() {
         yield put({type: 'START_SYSTEM'})
     });
-
 }
 
 
@@ -144,23 +117,12 @@ export const channels = function*() {
     })
 
     yield takeEvery('LOADCHANNELS', function*() {
-        yield apiHttp.send('api', {
-            type: 'LOADCHANNELS',
-            payload: {
-                path: '/rsGxsChannels/getChannelsSummaries'
-            }
-        })
+        yield apiCall('LOADCHANNELS','/rsGxsChannels/getChannelsSummaries');
     })
 
     yield takeEvery('LOADCHANNEL_EXTRADATA', function*(action) {
-        yield apiHttp.send('api', {
-            type: 'LOADCHANNEL_EXTRADATA',
-            payload: {
-                path: '/rsGxsChannels/getChannelsInfo',
-                data: {
-                    chanIds: action.payload.channels
-                }
-            }
+        yield apiCall('LOADCHANNEL_EXTRADATA','/rsGxsChannels/getChannelsInfo',{
+            chanIds: action.payload.channels
         })
     })
 }
@@ -183,12 +145,7 @@ export const peers = function*() {
     });
 
     yield takeEvery('LOADPEERS', function*() {
-        yield apiHttp.send('api', {
-            type: 'PEERS',
-            payload: {
-                path: '/rsPeers/getFriendList'
-            }
-        })
+        yield apiCall('PEERS','/rsPeers/getFriendList')
     })
 
     yield takeEvery('PEERS_SUCCESS', function*(action){
@@ -204,29 +161,18 @@ export const peers = function*() {
     })
 
     yield takeEvery('LOADPEER_INFO', function*(action){
-        yield apiHttp.send('api', {
-            type: 'LOADPEER_INFO',
-            payload: {
-                path: '/rsPeers/getPeerDetails',
-                data: {
-                    sslId: action.payload.id
-                }
-            }
+        yield apiCall('LOADPEER_INFO','/rsPeers/getPeerDetails',{
+            sslId: action.payload.id
         })
     })
 
-
-   /*  yield takeEvery('LOADPEER_INFO_SUCCESS', function*(action){
-        yield apiHttp.send('api', {
-            type: 'PEER_STATUS',
-            payload: {
-                path: '/rsPeers/isOnline',
-                data: {
+   /*
+   yield takeEvery('LOADPEER_INFO_SUCCESS', function*(action){
+        yield apiCall('PEER_STATUS','/rsPeers/isOnline',{
                     sslId: action.payload.det.id
-                }
-            }
         })
-    }) */
+    })
+    */
 
     let joinTier = 0;
     yield takeEvery('PEERS_SUCCESS', function*(action){
@@ -294,40 +240,4 @@ export const search = function*(){
                 store.dispatch({type: 'SEARCH_GET_RESULTS_SUCCESS', payload: JSON.parse(eventData.data)})
         }
     })
-
-    yield takeEvery('SEARCH_GET_RESULTS', function*(action) {
-        if (!action.payload){
-            action.payload = yield select(state => state.Api.searchId);
-        }
-        if(action.payload && action.payload !== '') {
-            yield apiHttp.send('-socket', {
-                type: 'SEARCH_GET_RESULTS',
-                payload: {
-                    path: '/filesearch/get_search_result',
-                    data: {
-                        search_id: action.payload
-                    }
-                }
-            })
-        }
-    })
-
-    yield takeEvery('SEARCH_GET_ACTIVES', function*() {
-        yield apiHttp.send('-socket', {
-            type: 'SEARCH_GET_ACTIVES',
-            payload: {
-                path: '/filesearch'
-            }
-        })
-    })
-
-    yield takeEvery('SEARCH_NEW_SUCCESS', function*(){
-        yield apiHttp.send('-socket', {
-            type: 'SEARCH_GET_ACTIVES',
-            payload: {
-                path: '/filesearch'
-            }
-        })
-    })
-
 }

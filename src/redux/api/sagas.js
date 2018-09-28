@@ -5,7 +5,7 @@ import config from '../../config';
 import httpApi from '../../httpApi';
 import { store } from '../../redux/store';
 
-const apiHttp = httpApi('http://localhost',8080);
+const apiHttp = httpApi('http://localhost',9092);
 
 // util function -> take only once
 function* takeFirst(pattern, saga, ...args) {
@@ -25,38 +25,10 @@ const wait = ms => (
     })
 );
 
-let ipcRenderer = {
-    send: (version, request) => new Promise((res, rej) => {
-        if(version === 'api') {
-            return apiHttp.request(request.payload.path, request.payload.data, request.payload.method || 'POST')
-                .then((data) =>{
-                    console.log('request',data)
-                    store.dispatch({type:request.type+'_SUCCESS', payload: data })
-                    res(data)
-                })
-                .catch((e)=> {
-                    console.log('errror', e)
-                    store.dispatch({type:request.type+'_FAILD', payload: e });
-                    rej(e)
-                })
-        }
-        else if(version === 'stream') {
-            const evtSource = new EventSource("http://localhost:9092"+request.payload.path, request.payload.data);
-            res(evtSource);
-        }
-    })
-}
-
-try {
-    ipcRenderer = window.require('electron').ipcRenderer;
-} catch (e) {
-    console.log('IN BROWSER')
-}
-
 export const user = function*() {
     
     yield takeEvery('LOGOUT', function*(){
-        yield ipcRenderer.send('-socket', {
+        yield apiHttp.send('-socket', {
             type: 'LOGOUT',
             payload: {
                 path: '/control/logout/'
@@ -65,7 +37,7 @@ export const user = function*() {
     })
 
     yield takeEvery('CONNECT', function*(){
-        yield ipcRenderer.send('api', {
+        yield apiHttp.send('api', {
             type: 'CHECK_LOGGIN',
             payload: {
                 path: '/rsLoginHelper/isLoggedIn'
@@ -74,7 +46,7 @@ export const user = function*() {
     })
 
     yield takeEvery(['CHECK_LOGGIN_SUCCESS','QUERY_LOCATIONS'], function*(action){
-        const result = yield ipcRenderer.send('api', {
+        const result = yield apiHttp.send('api', {
             type: 'QUERY_LOCATIONS',
             payload: {
                 path: '/rsLoginHelper/getLocations',
@@ -99,7 +71,7 @@ export const user = function*() {
 
     yield takeEvery(actions.CREATE_ACCOUNT, function*(action){
         const username = uuidv1() + '_repo';
-        yield ipcRenderer.send('api', {
+        yield apiHttp.send('api', {
             type: actions.CREATE_ACCOUNT,
             payload: {
                 path: '/rsLoginHelper/createLocation',
@@ -122,7 +94,7 @@ export const user = function*() {
     })
 
     yield takeEvery(actions.LOGIN, function*(action) {
-        yield ipcRenderer.send('api', {
+        yield apiHttp.send('api', {
             type: actions.LOGIN,
             payload: {
                 path: '/rsLoginHelper/attemptLogin',
@@ -136,7 +108,7 @@ export const user = function*() {
 
     yield takeEvery(['LOGIN_SUCCESS','GET_SELF_CERT'], function*(){
         const userId = yield select(state => state.Api.user.mLocationId)
-        yield ipcRenderer.send('api', {
+        yield apiHttp.send('api', {
             type: 'GET_SELF_CERT',
             payload: {
                 path: '/rsPeers/GetRetroshareInvite',
@@ -172,7 +144,7 @@ export const channels = function*() {
     })
 
     yield takeEvery('LOADCHANNELS', function*() {
-        yield ipcRenderer.send('api', {
+        yield apiHttp.send('api', {
             type: 'LOADCHANNELS',
             payload: {
                 path: '/rsGxsChannels/getChannelsSummaries'
@@ -181,7 +153,7 @@ export const channels = function*() {
     })
 
     yield takeEvery('LOADCHANNEL_EXTRADATA', function*(action) {
-        yield ipcRenderer.send('api', {
+        yield apiHttp.send('api', {
             type: 'LOADCHANNEL_EXTRADATA',
             payload: {
                 path: '/rsGxsChannels/getChannelsInfo',
@@ -211,7 +183,7 @@ export const peers = function*() {
     });
 
     yield takeEvery('LOADPEERS', function*() {
-        yield ipcRenderer.send('api', {
+        yield apiHttp.send('api', {
             type: 'PEERS',
             payload: {
                 path: '/rsPeers/getFriendList'
@@ -232,7 +204,7 @@ export const peers = function*() {
     })
 
     yield takeEvery('LOADPEER_INFO', function*(action){
-        yield ipcRenderer.send('api', {
+        yield apiHttp.send('api', {
             type: 'LOADPEER_INFO',
             payload: {
                 path: '/rsPeers/getPeerDetails',
@@ -245,7 +217,7 @@ export const peers = function*() {
 
 
    /*  yield takeEvery('LOADPEER_INFO_SUCCESS', function*(action){
-        yield ipcRenderer.send('api', {
+        yield apiHttp.send('api', {
             type: 'PEER_STATUS',
             payload: {
                 path: '/rsPeers/isOnline',
@@ -309,7 +281,7 @@ export const search = function*(){
             resultSockets = null;
         }
 
-        resultSockets = yield ipcRenderer.send('stream', {
+        resultSockets = yield apiHttp.send('stream', {
                 type: 'SEARCH_NEW',
                 payload: {
                     path: `/rsGxsChannels/turtleSearchRequest?jsonData=${encodeURIComponent(jsonData)}`
@@ -328,7 +300,7 @@ export const search = function*(){
             action.payload = yield select(state => state.Api.searchId);
         }
         if(action.payload && action.payload !== '') {
-            yield ipcRenderer.send('-socket', {
+            yield apiHttp.send('-socket', {
                 type: 'SEARCH_GET_RESULTS',
                 payload: {
                     path: '/filesearch/get_search_result',
@@ -341,7 +313,7 @@ export const search = function*(){
     })
 
     yield takeEvery('SEARCH_GET_ACTIVES', function*() {
-        yield ipcRenderer.send('-socket', {
+        yield apiHttp.send('-socket', {
             type: 'SEARCH_GET_ACTIVES',
             payload: {
                 path: '/filesearch'
@@ -350,7 +322,7 @@ export const search = function*(){
     })
 
     yield takeEvery('SEARCH_NEW_SUCCESS', function*(){
-        yield ipcRenderer.send('-socket', {
+        yield apiHttp.send('-socket', {
             type: 'SEARCH_GET_ACTIVES',
             payload: {
                 path: '/filesearch'

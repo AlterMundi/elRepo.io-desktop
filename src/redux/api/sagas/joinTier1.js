@@ -1,26 +1,8 @@
 import { takeEvery, put } from 'redux-saga/effects'
 import httpApi from '../../../httpApi';
-import { store } from '../../../redux/store';
 import config from '../../../config';
 
-const apiHttp = httpApi('http://localhost',8080 );
-
-let ipcRenderer = {
-    send: (version, request) => new Promise((res, rej) => {
-        console.log('IPC RENDERER',{ request })
-        apiHttp.request(request.payload.path, request.payload.data, request.payload.method || 'POST')
-            .then((data) =>{
-                console.log('request',data)
-                store.dispatch({type:request.type+'_SUCCESS', payload: data })
-                res(data)
-            })
-            .catch((e)=> {
-                console.log('errror', e)
-                store.dispatch({type:request.type+'_FAILD', payload: e });
-                rej(e)
-            })
-    })
-}
+const apiHttp = httpApi('http://localhost',9092);
 
 export const joinTiers = function*() {
     yield takeEvery('JOIN_TIER', function*(action){        
@@ -52,7 +34,7 @@ export const joinTiers = function*() {
     });
     
     yield takeEvery ('JOIN_TIER_SUCCESS', function*(action){
-        yield  yield ipcRenderer.send('api', {
+        yield  apiHttp.send('api', {
             type: 'ACCEPT_TIER',
             payload: {
                 path: '/rsPeers/acceptInvite',

@@ -1,18 +1,16 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import 'antd/dist/antd.css'; 
 
 import { Provider } from 'react-redux';
-import { store } from './redux/store';
+import { store, history } from './redux/store';
 
 import { RepoRouter } from './router';
-import { Sidebar } from './sidebar'
 import { SideMenu } from './components/sideMenu'
 import { UserState } from './components/userState'
 import { TiersState } from './components/tiersState'
 import { SearchBar } from './components/searchBar'
-import { Link, BrowserRouter as Router } from 'react-router-dom';
+import { ConnectedRouter } from "react-router-redux";
 import { Layout, Menu, Icon } from 'antd';
 const { Header, Sider, Content, Footer } = Layout;
 
@@ -32,7 +30,7 @@ class App extends Component {
   render() {
     return (
       <Provider store={store}>
-        <Router>
+        <ConnectedRouter history={history}>
           <Layout>
             <Layout>
               <Sider
@@ -44,7 +42,7 @@ class App extends Component {
                 <div className="logo">
                     <Icon type="copy" />
                 </div>
-                <SideMenu />
+                <SideMenu collapsed={this.state.collapsed}/>
               </Sider>
               <Layout>
                 <Header style={{ background: '#fff', padding: 0, display: 'flex', alignItems: 'center'}}>
@@ -57,8 +55,7 @@ class App extends Component {
                   <UserState />
                 </Header>
                 <Content style={{ overflowY: 'scroll', margin: '24px 16px', padding: 24, background: '#fff', height: 'calc( 100vh - 145px)' }}>
-                  <Sidebar />
-                  <RepoRouter />
+                  <RepoRouter history={history} />
                 </Content>
               </Layout>
             </Layout>
@@ -66,7 +63,7 @@ class App extends Component {
               <TiersState />
             </Footer>
           </Layout>
-        </Router>
+          </ConnectedRouter>
       </Provider>
     );
   }

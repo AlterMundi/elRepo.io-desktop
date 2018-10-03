@@ -15,7 +15,7 @@ export const joinTiers = function*() {
         try {
             const result = yield fetch(action.payload.url, {
                     body: JSON.stringify({
-                        cert_string: exportCert,
+                        cert_string: action.payload.cert || exportCert,
                         flags:
                         {
                             allow_direct_download: true,

@@ -91,18 +91,6 @@ export const user = function*() {
 export const channels = function*() {
     yield takeEvery('START_SYSTEM' , function*(){
         yield put({ type: 'LOADCHANNELS' })
-        while(true) {
-            const winner = yield race({
-                stopped: take('CHANNELS_MONITOR_STOP'),
-                tick: call(wait, 60000)
-            })
-
-            if (!winner.stopped) {
-                yield put({ type: 'LOADCHANNELS' })
-            } else {
-                break
-            }
-        }
     })
 
     yield takeEvery('LOADCHANNELS', function*() {
@@ -206,10 +194,35 @@ export const search = function*(){
                 }
             })
 
-
         resultSockets.onmessage = (eventData) => {
             if(typeof eventData.data.retval === 'undefined')
                 store.dispatch({type: 'SEARCH_GET_RESULTS_SUCCESS', payload: JSON.parse(eventData.data)})
         }
+    })
+}
+
+export const contentMagnament = function*() {
+
+    yield takeEvery([actions.CREATE_ACCOUNT_SUCCESS, 'CREATE_USER_CHANNEL'],function*({action, payload={}}){
+        console.log(action)
+        const user = yield select(state => state.Api.user);
+        const newGroupData = {
+            group: {
+                mDescription: "Open Repo",
+                mAutoDownload: true,
+                mMeta: {
+                    mGroupName: typeof payload.location !== 'undefined' ? payload.location.mLocationName: false || user.mLocationName,
+                    mGroupFlags: 4,
+                    mSignFlags: 520,
+                }
+            }
+        };
+        yield apiCall('CREATE_USER_CHANNEL','/rsGxsChannels/createGroup',newGroupData)
+    })
+
+    yield takeEvery('PUBLISH_CONTENT', function*(action){
+        yield apiCall('PUBLISH_CONTENT', '', {
+
+        })
     })
 }

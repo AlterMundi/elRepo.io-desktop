@@ -1,10 +1,9 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Card, Avatar, Table, Divider, Button  } from 'antd';
+import { Card, Avatar  } from 'antd';
 import { bindActionCreators } from 'redux';
 import apiActions from '../redux/api/actions';
 import VisibilitySensor from 'react-visibility-sensor';
-import filesize from 'filesize';
 
 const Meta = Card.Meta;
 
@@ -18,10 +17,10 @@ class Home extends Component {
         this.timer = null;
     }
 
-    componentDidMount() {
+    componentWillMount() {
         this.timer = setInterval(()=>{
             this.props.updateChannels();
-        },30000)
+        },10000)
     }
 
     checkExtraData(channel, channelInfo) {
@@ -33,37 +32,8 @@ class Home extends Component {
     }
 
     render() {
-
-        const columns = [{
-            title: 'Name',
-            dataIndex: 'name',
-            key: 'name',
-            render: text => <span>{text}</span>,
-        }, {
-            title: 'Size',
-            dataIndex: 'size',
-            key: 'size',
-            render: (size, record)=> <span>{filesize(Number(size || 0), {bits: true})}</span>
-        }, {
-            title: 'Actions',
-            key: 'actions',
-            render: (text, record) => (
-                <span>
-                <Button onClick={()=>console.log(record)}>Download</Button>
-                <Divider type="vertical" />
-                <Button onClick={()=>console.log(record)}>More info</Button>
-                </span>
-            ),
-        }];
-
         return (
-            <div> 
-                  <h2 style={{fontWeight:'300'}}>Search results <b>{this.props.search}</b> ({this.props.results.length})</h2>
-                  {this.props.results.length > 0? (
-                    <div>
-                        <Table columns={columns} dataSource={this.props.results} size="small"/>
-                    </div>): false
-                  }
+            <div>
                   <h2 style={{fontWeight:'300'}}>Channels</h2>
                   {this.props.channels.map(channel => (
                     <VisibilitySensor partialVisibility={true} onChange={this.checkExtraData(channel, this.props.channelsInfo[channel.mGroupId])}>
@@ -85,17 +55,13 @@ class Home extends Component {
 }
 
 const mapStateToProps = (state) => ({
-    cert: state.Api.cert,
     channels: state.Api.channels,
     channelsInfo: state.Api.channelsInfo,
-    search: state.Api.search,
-    results: state.Api.results
 })
 
 const dispatchToProps = (dispatch) => ({
     updateChannels: bindActionCreators(apiActions.updateChannels, dispatch),
-    loadExtraData: bindActionCreators(apiActions.loadExtraData, dispatch),
-    getResults: bindActionCreators(apiActions.updateSearchResults, dispatch)
+    loadExtraData: bindActionCreators(apiActions.loadExtraData, dispatch)
 })
   
 export default connect(mapStateToProps, dispatchToProps)(Home)

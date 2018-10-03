@@ -1,4 +1,5 @@
 # Open Culture Repository
 ## Desktop App
 
-Currently under development.
+![Screenshot](https://raw.githubusercontent.com/Altermundi/openrepo-desktop/master/screenshot.png)
+__Currently under development.__

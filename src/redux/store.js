@@ -6,7 +6,6 @@ import reducers from './reducers';
 import rootSaga from './sagas';
 import thunk from 'redux-thunk';
 
-const { ipcRenderer } = window.require("electron");
 
 const history = createHistory();
 const sagaMiddleware = createSagaMiddleware();
@@ -30,14 +29,6 @@ const store = createStore(
   }),
   enhancer
 );
-
-//Listen electorn ipcMain
-if (typeof ipcRenderer !== 'undefined')
-  ipcRenderer.on('api-reply',(event, args) => store.dispatch(args))
-
-
 sagaMiddleware.run(rootSaga);
-
 store.dispatch({type:'CONNECT'})
-
 export { store, history };

@@ -1,19 +1,12 @@
-
-import { all, call, select, takeEvery, take, put, race, fork } from 'redux-saga/effects';
+import { call, select, takeEvery, take, put, race } from 'redux-saga/effects';
 import actions from './actions';
 import uuidv1 from 'uuid/v1';
-import config from '../../config'
+import config from '../../config';
+import httpApi from '../../httpApi';
+import { store } from '../../redux/store';
+import { apiCall } from '../../helpers/apiWrapper'
 
-// util function -> take only once
-function* takeFirst(pattern, saga, ...args) {
-    const task = yield fork(function* () {
-        while(true) {
-            const action = yield take(pattern);
-            yield call(saga, ...args.concat(action));
-        }
-    });
-    return task;
-}
+const apiHttp = httpApi(config.api.url,config.api.port);
 
 // wait :: Number -> Promise
 const wait = ms => (
@@ -22,215 +15,147 @@ const wait = ms => (
     })
 );
 
-let ipcRenderer = {
-    send: ()=> new Promise.resolve('fake ipc rednerer')
-}
-
-try {
-    ipcRenderer = window.require('electron').ipcRenderer;
-} catch (e) {
-    console.log('In browser')
-}
-
-export const sendRequest = function* () {
-    yield takeEvery(actions.SEND_REQUEST, function*(action){
-        yield ipcRenderer.send('api', action.payload)
-    });
-};
-
-export const runState = function* () {
-    yield takeEvery(['CONNECT','RUNSTATE'], function*(action){
-        yield ipcRenderer.send('api', {
-            type: 'CONNECT',
-            payload:{
-                path: '/control/runstate/'
-            }
-        })
-    });
-}
-
-export const manageRunState = function*() {
-    let firstOk = true;
-    yield takeEvery('CONNECT_SUCCESS', function*(action) {
-        const runningState = yield select(state => state.Api.runstate)
-        if(firstOk && runningState === 'running_ok'){
-            firstOk = false;
-            yield put([{ type: 'GET_IDENTITY'},{ type: 'LOADCHANNELS'}])
-        } else {
-            switch(runningState) {
-                case 'waiting_account_select':
-                    const logged =yield select(state=>state.Api.login)
-                    if(logged === false)
-                        yield put({ type: 'QUERY_LOCATIONS'});
-                default:
-                    return;
-            }
-        }
-    })
-}
-
-export const queryLocations = function*() {
-    yield takeEvery('QUERY_LOCATIONS', function*(action) {
-        const payload = (typeof action.payload !== 'undefined')? action.payload: {};
-        yield ipcRenderer.send('api', {
-            type: (payload.afterLogin)? 'REQUERY_LOCATIONS':'QUERY_LOCATIONS',
+export const user = function*() {
+    
+    yield takeEvery('LOGOUT', function*(){
+        yield apiHttp.send('-socket', {
+            type: 'LOGOUT',
             payload: {
-                path: '/control/locations/',
-                data: {},
+                path: '/control/logout/'
             }
         })
     })
-};
 
-export const loadLocations = function*() {
-    yield takeEvery('QUERY_LOCATIONS_SUCCESS', function*(action) {
-        const isLogged = yield select(state => state.Api.login);
-        if(action.payload.data.length === 0)
-            yield put({type: actions.CREATE_ACCOUNT})
-        else if (isLogged === false)
-            yield put({type: actions.LOGIN, payload: action.payload.data[0]})
+    yield takeEvery('CONNECT', function*(){
+        yield apiCall('CHECK_LOGGIN', '/rsLoginHelper/isLoggedIn')
     })
-}
 
-export const createAccount = function*() {
+    yield takeEvery(['CHECK_LOGGIN_SUCCESS','QUERY_LOCATIONS'], function*(){
+        yield apiCall('QUERY_LOCATIONS','/rsLoginHelper/getLocations')
+    })
+
+    yield takeEvery('QUERY_LOCATIONS_SUCCESS', function*(action) {
+        const isLogged = yield select(state => state.Api.runstate === true);
+        //Si no hay cuentas crear una
+        if(action.payload.locations.length === 0)
+            yield put({type: actions.CREATE_ACCOUNT})
+        //Si el sistema tiene cuentas y fugura sin login hago lopgin
+        else if (isLogged === false)
+            yield put({type: actions.LOGIN, payload: action.payload.locations[0]})
+        //Sino simulo un login exitoso
+        else
+            yield put({type: actions.LOGIN_SUCCESS, payload: action.payload.locations[0]})
+    })
+
     yield takeEvery(actions.CREATE_ACCOUNT, function*(action){
         const username = uuidv1() + '_repo';
-        yield ipcRenderer.send('api', {
-            type: actions.CREATE_ACCOUNT,
-            payload: {
-                path: '/control/create_location/',
-                data: {
-                    pgp_name: username,
-                    ssl_name: username,
-                    pgp_password: 'demorepo'
+        yield apiCall(
+            actions.CREATE_ACCOUNT,
+            '/rsLoginHelper/createLocation',
+            {
+                location: {
+                    mPpgName: username,
+                    mLocationName: username
                 },
+                password: '0000',
+                makeHidden: false,
+                makeAutoTor: false
             }
-        })
+        )
     })
-}
 
-export const loginAccount = function*() {
+    yield takeEvery(actions.CREATE_ACCOUNT_SUCCESS, function*(action){
+        yield put({ type: 'QUERY_LOCATIONS'})
+    })
+
     yield takeEvery(actions.LOGIN, function*(action) {
-        yield ipcRenderer.send('api', {
-            type: actions.LOGIN,
-            payload: {
-                path: '/control/login/',
-                data: {
-                    id: action.payload.peer_id
-                }
-            }
+        yield apiCall(actions.LOGIN,'/rsLoginHelper/attemptLogin', {
+            account: action.payload.mLocationId,
+            password: '0000'
         })
+    });
+
+    yield takeEvery(['LOGIN_SUCCESS','GET_SELF_CERT'], function*(){
+        const userId = yield select(state => state.Api.user.mLocationId)
+        yield apiCall('GET_SELF_CERT','/rsPeers/GetRetroshareInvite',{
+            sslId: userId
+        })
+    })
+
+    yield takeEvery(actions.LOGIN_SUCCESS, function*() {
+        yield put({type: 'START_SYSTEM'})
     });
 }
 
-export const listenPassword = function*() {
-    yield takeEvery(actions.LISTEN_PASSWORD, function*() {
-        yield ipcRenderer.send('api', {
-            type: actions.LISTEN_PASSWORD,
-            payload: {
-                path: '/control/password/',
-                data: ''
-            }
-        })
-    });
-}
 
-export const manageAuth = function*() {
-    yield takeEvery(actions.LOGIN_SUCCESS, function*(action) {
-        yield put({ type: 'LISTEN_PASSWORD'})
+export const channels = function*() {
+    yield takeEvery('START_SYSTEM' , function*(){
+        yield put({ type: 'LOADCHANNELS' })
     })
-}   
 
-export const tryPassword = function*() {
-    yield takeEvery('TRY_PASSWORD', function*(action){
-        yield ipcRenderer.send('api', {
-            type: 'TRY_PASSWORD',
-            payload: {
-                path: '/control/password/',
-                data: { password: 'demorepo' }
-            }
-        })
+    yield takeEvery('LOADCHANNELS', function*() {
+        yield apiCall('LOADCHANNELS','/rsGxsChannels/getChannelsSummaries');
     })
-    yield takeEvery('TRY_PASSWORD_SUCCESS', function*(action){
-            //yield put({ type: 'GET_IDENTITY' })
+
+    yield takeEvery('LOADCHANNEL_EXTRADATA', function*(action) {
+        yield apiCall('LOADCHANNEL_EXTRADATA','/rsGxsChannels/getChannelsInfo',{
+            chanIds: action.payload.channels
+        })
     })
 }
 
-export const Identity = function*() {
-
-    yield takeEvery('GET_IDENTITY', function*(){
-        yield ipcRenderer.send('api', {
-            type: 'GET_IDENTITY',
-            payload: {
-                path: '/identity/own'
-            }
-        })
-    })
-
-    yield takeEvery('GET_IDENTITY_SUCCESS', function*(action){
-        if(action.payload.data.length === 0) {
-            yield put({ type: 'ADD_IDENTITY' })
-        } else {
-            yield put({ type: 'GET_SELF_CERT'})
-        }
-    })
-
-    yield takeEvery('GET_SELF_CERT_SUCCESS', function*(){
-        yield put({ 
-            type: 'SEND_REQUEST',
-            payload: {
-                type: 'PEERS',
-                payload:{
-                    path: '/peers/*'
-                }
-            }
-        })
-    })
-
-    yield takeEvery('ADD_IDENTITY',function*(){
-        yield ipcRenderer.send('api', {
-            type: 'ADD_IDENTITY',
-            payload: {
-                path: '/identity/create_identity',
-                data: {
-                    pgp_linked: false,
-                    name: 'openrepo'
-                }
-            }
-        })
-    })
-
-    yield takeEvery('ADD_IDENTITY_SUCCESS', function*(){
-        yield put({ type: 'GET_IDENTITY'})
-    })
-}
-
-export const peerMonitor = function*() {
-    yield takeEvery(['PEER_MONITOR_START'], function*(action){
+export const peers = function*() {
+    yield takeEvery(['START_SYSTEM'], function*(action){
+        yield put({type: 'LOADPEERS'})
         while(true) {
             const winner = yield race({
                 stopped: take('PEER_MONITOR_STOP'),
-                tick: call(wait, 5324)
+                tick: call(wait, 10000)
             })
 
             if (!winner.stopped) {
-                yield put({ 
-                    type: 'SEND_REQUEST',
-                    payload: {
-                        type: 'PEERS',
-                        payload:{
-                            path: '/peers/*'
-                        }
-                    }
-                })
+                yield put({type: 'LOADPEERS'})
             } else {
                 break
             }
         }
     });
 
-    yield takeFirst('PEERS_SUCCESS', function*(action){
-        if (typeof action.payload.data !== 'undefined' && action.payload.data.length === 0){
+    yield takeEvery('LOADPEERS', function*() {
+        yield apiCall('PEERS','/rsPeers/getFriendList')
+    })
+
+    yield takeEvery('PEERS_SUCCESS', function*(action){
+        const sslIds = action.payload.sslIds || [];
+        if(sslIds.length > 0) {
+            let i = 0;
+            while(i < sslIds.length){
+                yield put({type: 'LOADPEER_INFO', payload: {id: sslIds[i]}});
+                i++;
+            }
+        }
+        return;
+    })
+
+    yield takeEvery('LOADPEER_INFO', function*(action){
+        yield apiCall('LOADPEER_INFO','/rsPeers/getPeerDetails',{
+            sslId: action.payload.id
+        })
+    })
+
+   /*
+   yield takeEvery('LOADPEER_INFO_SUCCESS', function*(action){
+        yield apiCall('PEER_STATUS','/rsPeers/isOnline',{
+                    sslId: action.payload.det.id
+        })
+    })
+    */
+
+    let joinTier = 0;
+    yield takeEvery('PEERS_SUCCESS', function*(action){
+        if(joinTier !== 0) return;
+        joinTier = 1;
+        if (typeof action.payload.sslIds !== 'undefined' && action.payload.sslIds.length === 0){
             const api = yield select(state => state.Api)
             yield put({
                 type: actions.JOIN_TIER,
@@ -238,104 +163,66 @@ export const peerMonitor = function*() {
                     url: config.tiers1[0].url,
                     remote: true,
                     cert: api.cert,
-                    user: api.user.name
+                    user: api.user.mLocationName
                 }
             })
         }
     })
 }
 
-
-
-export const sendPassword = function*() {
-    yield takeEvery('LISTEN_PASSWORD_SUCCESS', function*(action){
-        if(action.payload.data.want_password === true)
-            yield put({ type: 'TRY_PASSWORD'})
-    });
-}
-
-export const loadChannels = function*() {
-    /* yield takeEvery(['CHANNELS_MONITOR_START'], function*(action){
-        while(true) {
-            const winner = yield race({
-                stopped: take('CHANNELS_MONITOR_STOP'),
-                tick: call(wait, 0)
-            })
-
-            if (!winner.stopped) {
-                yield put({ type: 'LOADCHANNELS' })
-            } else {
-                break
-            }
-        }
-    }); */
-
-    yield takeEvery('LOADCHANNELS', function*() {
-        yield ipcRenderer.send('api', {
-            type: 'LOADCHANNELS',
-            payload: {
-                path: '/channels/list_channels'
-            }
-        })
+export const search = function*(){
+    yield takeEvery('START_SYSTEM' , function*(){
     })
-}
 
-export const getSlefCert = function*() {
-    yield takeEvery('GET_SELF_CERT', function*(){
-        yield ipcRenderer.send('api', {
-            type: 'GET_SELF_CERT',
-            payload: {
-                path: '/peers/self/certificate/'
-            }
-        })
-    })
-}
-
-export const search = function*() {
+    let resultSockets = null;
 
     //START SEARCH
     yield takeEvery('SEARCH_NEW', function*(action) {
-        yield ipcRenderer.send('api', {
-            type: 'SEARCH_NEW',
-            payload: {
-                path: '/filesearch/create_search',
-                data: {
-                    distant: true,
-                    search_string: action.payload
-                }
-            }
-        })
-    })
+        const jsonData = JSON.stringify({
+            matchString: action.payload
+        });
+        
+        if(resultSockets !== null) {
+            resultSockets.close();
+            resultSockets = null;
+        }
 
-    yield takeEvery('SEARCH_GET_RESULTS', function*(action) {
-        yield ipcRenderer.send('api', {
-            type: 'SEARCH_GET_RESULTS',
-            payload: {
-                path: '/filesearch/get_search_result',
-                data: {
-                    search_id: action.payload
+        resultSockets = yield apiHttp.send('stream', {
+                type: 'SEARCH_NEW',
+                payload: {
+                    path: `/rsGxsChannels/turtleSearchRequest?jsonData=${encodeURIComponent(jsonData)}`
                 }
-            }
-        })
-    })
+            })
 
-    yield takeEvery('SEARCH_GET_ACTIVES', function*() {
-        yield ipcRenderer.send('api', {
-            type: 'SEARCH_GET_ACTIVES',
-            payload: {
-                path: '/filesearch'
-            }
-        })
+        resultSockets.onmessage = (eventData) => {
+            if(typeof eventData.data.retval === 'undefined')
+                store.dispatch({type: 'SEARCH_GET_RESULTS_SUCCESS', payload: JSON.parse(eventData.data)})
+        }
     })
 }
 
-export const logout = function*() {
-    yield takeEvery('LOGOUT', function*(){
-        yield ipcRenderer.send('api', {
-            type: 'LOGOUT',
-            payload: {
-                path: '/control/logout/'
+export const contentMagnament = function*() {
+
+    yield takeEvery([actions.CREATE_ACCOUNT_SUCCESS, 'CREATE_USER_CHANNEL'],function*({action, payload={}}){
+        console.log(action)
+        const user = yield select(state => state.Api.user);
+        const newGroupData = {
+            group: {
+                mDescription: "Open Repo",
+                mAutoDownload: true,
+                mMeta: {
+                    mGroupName: typeof payload.location !== 'undefined' ? payload.location.mLocationName: false || user.mLocationName,
+                    mGroupFlags: 4,
+                    mSignFlags: 520,
+                }
             }
+        };
+        yield apiCall('CREATE_USER_CHANNEL','/rsGxsChannels/createGroup',newGroupData)
+    })
+
+    yield takeEvery('PUBLISH_CONTENT', function*(action){
+        yield apiCall('PUBLISH_CONTENT', '', {
+
         })
     })
 }

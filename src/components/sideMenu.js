@@ -1,14 +1,10 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
 import { Menu, Icon } from 'antd'
 import { Link } from 'react-router-dom'
 
 class SideMenuComponent extends Component {
-    constructor(props) {
-        super(props)
-    }
-
+    
     render() {
         return (
           <Menu theme="light" mode="inline" defaultSelectedKeys={['1']}>

@@ -40,14 +40,28 @@ class Home extends Component {
                         <Card 
                             key={channel.channel_id}
                             style={{marginBottom: '15px'}}
+                            onClick={()=>this.props.loadChannelContent(channel.mGroupId)}
                         >
                             <Meta
                                 avatar={<Avatar src={ this.props.channelsInfo[channel.mGroupId]? 'data:image/png;base64,' + this.props.channelsInfo[channel.mGroupId].mImage.mData: false } />}
-                                title={channel.mGroupName}
+                                title={channel.mGroupName === this.props.user.mLocationName? 'My channel': channel.mGroupName}
                                 description={this.props.channelsInfo[channel.mGroupId]? trunc(140, this.props.channelsInfo[channel.mGroupId].mDescription): false}
                             />
                         </Card>
                     </VisibilitySensor>
+                  ))}
+
+                  <h2 style={{fontWeight:'300'}}>Posts</h2>
+                  {this.props.posts.map(post => (
+                        <Card 
+                            key={post.mMeta.mMsgId}
+                            style={{marginBottom: '15px'}}
+                        >
+                            <Meta
+                                title={post.mMeta.mMsgName}
+                                description={post.mMsg}
+                            />
+                        </Card>
                   ))}
             </div>
         )
@@ -55,13 +69,16 @@ class Home extends Component {
 }
 
 const mapStateToProps = (state) => ({
+    user: state.Api.user,
     channels: state.Api.channels,
     channelsInfo: state.Api.channelsInfo,
+    posts: state.Api.posts || []
 })
 
 const dispatchToProps = (dispatch) => ({
     updateChannels: bindActionCreators(apiActions.updateChannels, dispatch),
-    loadExtraData: bindActionCreators(apiActions.loadExtraData, dispatch)
+    loadExtraData: bindActionCreators(apiActions.loadExtraData, dispatch),
+    loadChannelContent: bindActionCreators(apiActions.loadChannelContent, dispatch)
 })
   
 export default connect(mapStateToProps, dispatchToProps)(Home)

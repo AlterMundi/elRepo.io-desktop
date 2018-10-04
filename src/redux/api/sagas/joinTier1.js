@@ -15,6 +15,9 @@ export const joinTiers = function*() {
         try {
             const result = yield fetch(action.payload.url, {
                     body: JSON.stringify({
+                            invite: action.payload.cert || exportCert,
+                        }),
+                     /*JSON.stringify({
                         cert_string: action.payload.cert || exportCert,
                         flags:
                         {
@@ -22,7 +25,7 @@ export const joinTiers = function*() {
                             allow_push: false,
                             require_whitelist: false,
                         }
-                    }),
+                    }),*/
                     headers: {'content-type': 'application/json'},
                     method: 'POST'
                 }).then(res => res.json())

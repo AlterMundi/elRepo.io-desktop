@@ -5,6 +5,8 @@ const infoToObj = (channelsArray) => {
     
 }
 
+const onlyRepoChannels = (channels=[])  => channels.filter(channel => channel.mGroupName.indexOf('_repo') !== -1)
+
 const initState = {
     login: false,
     runstate: null,
@@ -64,10 +66,9 @@ export default function apiReducer(state = initState, action) {
                 identity: (action.payload.data.length > 0)? action.payload.data[0]: undefined
             }
         case 'LOADCHANNELS_SUCCESS': 
-            console.log(action.payload)
             return {
                 ...state,
-                channels: action.payload.channels || []
+                channels: onlyRepoChannels(action.payload.channels || [])
             }
         case 'LOADCHANNEL_EXTRADATA_SUCCESS': {
             return {
@@ -94,6 +95,11 @@ export default function apiReducer(state = initState, action) {
             return {
                 ...state,
                 results: state.results.concat(action.payload.results || [])
+            }
+        case 'LOADCHANNEL_POSTS_SUCCESS':
+            return {
+                ...state,
+                posts: action.payload.posts
             }
         default:
             return state;

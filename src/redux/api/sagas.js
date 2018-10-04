@@ -102,6 +102,29 @@ export const channels = function*() {
             chanIds: action.payload.channels
         })
     })
+    
+    yield takeEvery('LOADCHANNEL_CONTENT', function*(action) {
+        yield apiCall('LOADCHANNEL_POSTS','/rsGxsChannels/getChannelsContent',{
+            chanIds: action.payload.channels
+        })
+    })
+
+    yield takeEvery('LOADCHANNELS_SUCCESS', function*(action){
+        //Autosubcrive _repo channels
+        let a = 0;
+        const user = yield select(state => state.Api.user)
+        while(action.payload.channels.length > a) {
+            if(
+                action.payload.channels[a].mGroupName.indexOf('_repo') !== -1 &&
+                action.payload.channels[a].mGroupName !== user.mLocationName
+            ) {
+                yield apiCall('CHANNEL_SUBSCRIVE', '/rsGxsChannels/subscribeToGroup',{
+                    group: action.payload.channels[a]
+                })
+            }
+            a++;
+        }
+    })
 }
 
 export const peers = function*() {
@@ -220,9 +243,21 @@ export const contentMagnament = function*() {
         yield apiCall('CREATE_USER_CHANNEL','/rsGxsChannels/createGroup',newGroupData)
     })
 
-    yield takeEvery('PUBLISH_CONTENT', function*(action){
-        yield apiCall('PUBLISH_CONTENT', '', {
-
+    yield takeEvery('CREATE_POST', function*(action){
+        const user = yield select(state => state.Api.user);
+        const channels = yield select(state => state.Api.channels);
+        
+        const mGroupId = channels.reduce((prev,channel) => 
+            (channel.mGroupName === user.mLocationName)? channel.mGroupId: prev,'')
+        
+        yield apiCall('CREATE_POST', '/rsGxsChannels/createPost', {
+            post: {
+                mMeta: {
+                    mGroupId: mGroupId,
+                    mMsgName: action.payload.title
+                },
+                mMsg: action.payload.description
+            }
         })
     })
 }

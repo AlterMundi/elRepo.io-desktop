@@ -91,7 +91,23 @@ export const user = function*() {
 export const channels = function*() {
     yield takeEvery('START_SYSTEM' , function*(){
         yield put({ type: 'LOADCHANNELS' })
-    })
+        let chansIds = [];
+        while(true) {
+            const winner = yield race({
+                stopped: take('LOADCHANNEL_CONTENT_STOP'),
+                tick: call(wait, 1222)
+            })
+
+            if (!winner.stopped) {
+                chansIds = yield select(state => state.Api.channels.map(channel => channel.mGroupId));
+                yield put({type: 'LOADCHANNEL_CONTENT', payload: {
+                 channels: chansIds
+                }})
+            } else {
+                break
+            }
+    }
+})
 
     yield takeEvery('LOADCHANNELS', function*() {
         yield apiCall('LOADCHANNELS','/rsGxsChannels/getChannelsSummaries');
@@ -114,18 +130,25 @@ export const channels = function*() {
         let a = 0;
         const user = yield select(state => state.Api.user)
         while(action.payload.channels.length > a) {
+            console.log(action.payload.channels[a].mSubscribeFlags)
             if(
-                action.payload.channels[a].mGroupName.indexOf('_repo') !== -1 &&
-                action.payload.channels[a].mGroupName !== user.mLocationName
+                //If is open repo channel
+                (action.payload.channels[a].mGroupName.indexOf('_repo') !== -1) &&
+                //And im not subscribed
+                (action.payload.channels[a].mSubscribeFlags !== 4 ) &&
+                //And not is my channel
+                (action.payload.channels[a].mGroupName !== user.mLocationName)
             ) {
                 yield apiCall('CHANNEL_SUBSCRIVE', '/rsGxsChannels/subscribeToGroup',{
-                    group: action.payload.channels[a]
+                    groupId: action.payload.channels[a].mGroupId
                 })
+                yield wait(200)
             }
             a++;
         }
     })
 }
+
 
 export const peers = function*() {
     yield takeEvery(['START_SYSTEM'], function*(action){
@@ -225,7 +248,7 @@ export const search = function*(){
 }
 
 export const contentMagnament = function*() {
-
+    
     yield takeEvery([actions.CREATE_ACCOUNT_SUCCESS, 'CREATE_USER_CHANNEL'],function*({action, payload={}}){
         console.log(action)
         const user = yield select(state => state.Api.user);

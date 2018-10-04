@@ -13,8 +13,9 @@ const initState = {
     channels: [],
     cert: null,
     search: null,
-    results: [],
-    channelsInfo: {}
+    results: {},
+    channelsInfo: {},
+    posts: {}
 }
 
 export default function apiReducer(state = initState, action) {
@@ -92,14 +93,22 @@ export default function apiReducer(state = initState, action) {
                 results:[]
             }
         case 'SEARCH_GET_RESULTS_SUCCESS':
+            if(typeof action.payload.result === 'undefined') { return state };
             return {
                 ...state,
-                results: state.results.concat(action.payload.results || [])
+                results: {
+                    ...state.results,
+                    [action.payload.result.mGroupId]: action.payload.result
+                }
             }
         case 'LOADCHANNEL_POSTS_SUCCESS':
             return {
                 ...state,
-                posts: action.payload.posts
+                posts: {
+                    ...state.posts,
+                    ...action.payload.posts
+                        .reduce((prev,act) => ({...prev,[act.mMeta.mMsgId]:act}), {})
+                }
             }
         default:
             return state;

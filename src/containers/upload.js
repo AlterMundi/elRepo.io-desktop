@@ -1,7 +1,11 @@
 import React, { Component } from 'react'
-import {Form, Input, Button, Upload, Icon } from "antd"
+import {Form, Input, Button, Upload, Icon, TE } from "antd"
 
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux'
+import actions from "../redux/api/actions"
 const FormItem = Form.Item;
+const { TextArea } = Input;
 
 class UploadView extends Component {
     
@@ -9,6 +13,7 @@ class UploadView extends Component {
         super();
         this.state = {
             title: undefined,
+            description: undefined,
             file: undefined,
             uploading: false,
         }
@@ -16,20 +21,20 @@ class UploadView extends Component {
     }
 
     publish() {
-        /*this.props.publish({
+        this.props.publish({
             title: this.state.title || '',
-            file: this.state.file || {}
-        })*/
+            description: this.state.description || ''
+        })
+
+        //Fake loading status
         this.setState({uploading: !this.state.uploading})
+        setTimeout(()=>this.setState({uploading: !this.state.uploading}), 1000)
     }
        
     render() {
         const { uploading } = this.state;
         
-        const formItemLayout = {
-            labelCol: { span: 2},
-            wrapperCol: { span: 20 },
-          };
+        const formItemLayout = {};
   
 
         const uploadProps = {
@@ -52,7 +57,11 @@ class UploadView extends Component {
                     <FormItem label="Title" {...formItemLayout}>
                         <Input type="text" name="title" onChange={(e => this.setState({title: e.target.value}))}/>
                     </FormItem>
+                    <FormItem label="Description" {...formItemLayout}>
+                        <TextArea name="description" onChange={(e => this.setState({description: e.target.value}))}/>
+                    </FormItem>
           
+                    {/*
                     <FormItem label="File" {...formItemLayout}>
                         <Upload name="file" {...uploadProps}>
                             <Button>
@@ -60,6 +69,8 @@ class UploadView extends Component {
                             </Button>
                         </Upload>
                     </FormItem>
+                    */}
+
                     <FormItem {...formItemLayout}>
                         <Button type="primary" disable={uploading.toString()} loading={uploading} onClick={this.publish}>Publish</Button>
                     </FormItem>
@@ -72,4 +83,9 @@ class UploadView extends Component {
     }    
 }
 
-export default Form.create()(UploadView)
+export default connect(
+    state => ({}),
+    dispatch => ({
+        publish: bindActionCreators(actions.createPost, dispatch)
+    })
+)(Form.create()(UploadView))

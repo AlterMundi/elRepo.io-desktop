@@ -14,7 +14,9 @@ export const actions = {
     JOIN_TIER: 'JOIN_TIER',
     JOIN_TIER_SUCCESS: 'JOIN_TIER_SUCCESS',
     JOIN_TIER_FAILD: 'JOIN_TIER_FAILD',
-
+    CREATE_POST: 'CREATE_POST',
+    CREATE_POST_FAILD: 'CREATE_POST_FAILD',
+    CREATE_POST_SUCCESS: 'CREATE_POST_SUCCESS',
     SEARCH_GET_RESULTS: 'SEARCH_GET_RESULTS',
 
     updateSearchResults: ( id ) => (dispatch) => {
@@ -58,6 +60,15 @@ export const actions = {
         })
     },
 
+    loadChannelContent:(channelId) => (dispatch) => {
+        dispatch({
+            type: 'LOADCHANNEL_CONTENT',
+            payload: {
+                channels: [channelId]
+            }
+        })
+    },
+
     joinTier1: (payload) => (dispatch, getState) => {
         dispatch({
             type: actions.JOIN_TIER,
@@ -72,6 +83,10 @@ export const actions = {
 
     newSearch: (payload) => dispatch => {
         dispatch({type: 'SEARCH_NEW', payload})
+    },
+
+    createPost: (payload) => dispatch => {
+        dispatch({type: actions.CREATE_POST, payload})
     }
 }
 

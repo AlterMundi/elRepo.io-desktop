@@ -34,6 +34,7 @@ class Home extends Component {
     render() {
         return (
             <div>
+                {/*
                   <h2 style={{fontWeight:'300'}}>Channels</h2>
                   {this.props.channels.map(channel => (
                     <VisibilitySensor partialVisibility={true} onChange={this.checkExtraData(channel, this.props.channelsInfo[channel.mGroupId])}>
@@ -50,7 +51,7 @@ class Home extends Component {
                         </Card>
                     </VisibilitySensor>
                   ))}
-
+                  */}
                   <h2 style={{fontWeight:'300'}}>Posts</h2>
                   {this.props.posts.map(post => (
                         <Card 
@@ -72,7 +73,7 @@ const mapStateToProps = (state) => ({
     user: state.Api.user,
     channels: state.Api.channels,
     channelsInfo: state.Api.channelsInfo,
-    posts: state.Api.posts || []
+    posts: Object.values(state.Api.posts) || []
 })
 
 const dispatchToProps = (dispatch) => ({

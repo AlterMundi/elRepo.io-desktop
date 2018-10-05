@@ -130,7 +130,6 @@ export const channels = function*() {
         let a = 0;
         const user = yield select(state => state.Api.user)
         while(action.payload.channels.length > a) {
-            console.log(action.payload.channels[a].mSubscribeFlags)
             if(
                 //If is open repo channel
                 (action.payload.channels[a].mGroupName.indexOf('_repo') !== -1) &&

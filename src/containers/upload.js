@@ -1,9 +1,11 @@
 import React, { Component } from 'react'
-import {Form, Input, Button, Upload, Icon, TE } from "antd"
+import {Form, Input, Button,  Icon } from "antd"
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux'
 import actions from "../redux/api/actions"
+import { fileUploader } from '../helpers/fileUploader'
+
 const FormItem = Form.Item;
 const { TextArea } = Input;
 
@@ -14,10 +16,11 @@ class UploadView extends Component {
         this.state = {
             title: undefined,
             description: undefined,
-            file: undefined,
+            files: [],
             uploading: false,
         }
         this.publish = this.publish.bind(this);
+        this.selectFiles = this.selectFiles.bind(this);
     }
 
     publish() {
@@ -30,26 +33,18 @@ class UploadView extends Component {
         this.setState({uploading: !this.state.uploading})
         setTimeout(()=>this.setState({uploading: !this.state.uploading}), 1000)
     }
+
+    selectFiles() {
+        fileUploader.openDialog()
+            .then(fileUploader.getFilesInfo)
+            .then(filesInfo => this.setState({files: [...filesInfo, ...this.state.files]}))
+    }
        
     render() {
         const { uploading } = this.state;
         
         const formItemLayout = {};
   
-
-        const uploadProps = {
-            onRemove: (file) => {
-              console.log({ file })
-              this.setState({ file: undefined })
-            },
-            beforeUpload: (file) => {
-              this.setState({file});
-              return false;
-            },
-            fileList: this.state.file? [this.state.file]: [],
-            multiple: false
-        };
-
         return (
             <div>
                 <h2>Publish</h2>
@@ -60,24 +55,17 @@ class UploadView extends Component {
                     <FormItem label="Description" {...formItemLayout}>
                         <TextArea name="description" onChange={(e => this.setState({description: e.target.value}))}/>
                     </FormItem>
-          
-                    {/*
-                    <FormItem label="File" {...formItemLayout}>
-                        <Upload name="file" {...uploadProps}>
-                            <Button>
-                                <Icon type="upload" /> Select file
-                            </Button>
-                        </Upload>
+                    <FormItem>
+                        <Button onClick={this.selectFiles}>
+                            <Icon type="upload" /> Select file
+                        </Button>
                     </FormItem>
-                    */}
 
                     <FormItem {...formItemLayout}>
                         <Button type="primary" disable={uploading.toString()} loading={uploading} onClick={this.publish}>Publish</Button>
                     </FormItem>
                 </Form>
-                <pre>
-                    {JSON.stringify(this.state, null, "  ")}
-                </pre>
+
             </div>
         )
     }    

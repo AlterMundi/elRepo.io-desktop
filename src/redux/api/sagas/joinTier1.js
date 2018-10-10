@@ -36,13 +36,13 @@ export const joinTiers = function*() {
         }
     });
     
-    yield takeEvery ('JOIN_TIER_SUCCESS', function*(action){
+    yield takeEvery ('JOIN_TIER_SUCCESS', function*({type, payload = {}}){
         yield  apiHttp.send('api', {
             type: 'ACCEPT_TIER',
             payload: {
                 path: '/rsPeers/acceptInvite',
                 data: {
-                    invite: config.tiers1[0].credential
+                    invite: payload.cert || config.tiers1[0].credential
                 }
             }
         })

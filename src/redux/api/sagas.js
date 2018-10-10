@@ -47,8 +47,9 @@ export const user = function*() {
             yield put({type: actions.LOGIN_SUCCESS, payload: action.payload.locations[0]})
     })
 
-    yield takeEvery(actions.CREATE_ACCOUNT, function*(action){
-        const username = uuidv1() + '_repo';
+    yield takeEvery(actions.CREATE_ACCOUNT, function*({type, payload = {}   }){
+        const username = payload.username || uuidv1() + '_repo';
+        const password = payload.password? payload.password: yield select(state => state.Api.password)
         yield apiCall(
             actions.CREATE_ACCOUNT,
             '/rsLoginHelper/createLocation',
@@ -57,7 +58,7 @@ export const user = function*() {
                     mPpgName: username,
                     mLocationName: username
                 },
-                password: '0000',
+                password: password,
                 makeHidden: false,
                 makeAutoTor: false
             }
@@ -68,10 +69,11 @@ export const user = function*() {
         yield put({ type: 'QUERY_LOCATIONS'})
     })
 
-    yield takeEvery(actions.LOGIN, function*(action) {
+    yield takeEvery(actions.LOGIN, function*({type, payload}) {
+        const password = payload.password? payload.password: yield select(state => state.Api.password)
         yield apiCall(actions.LOGIN,'/rsLoginHelper/attemptLogin', {
-            account: action.payload.mLocationId,
-            password: '0000'
+            account: payload.mLocationId,
+            password: password
         })
     });
 
@@ -282,4 +284,5 @@ export const contentMagnament = function*() {
             }
         })
     })
+
 }

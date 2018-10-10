@@ -1,13 +1,21 @@
 import { store } from '../redux/store';
 
 const api = (url, port) => {
-    const apiHttp = (path, data, method) => fetch(url+':'+port+path, { method , body: data? JSON.stringify(data): undefined}   )
+    const apiHttp = (path, data, method, headers) => fetch(url+':'+port+path, { headers, method , body: data? JSON.stringify(data): undefined}   )
         .then(res => res.json());
 
     return  {
         send: (version, request) => new Promise((res, rej) => {
             if(version === 'api') {
-                return apiHttp(request.payload.path, request.payload.data, request.payload.method || 'POST')
+                
+                let headers = new Headers()
+                //Add auth headers
+                const {Api} = store.getState();
+                if (Api && Api.login === true) {
+                    headers.set('Authorization', 'Basic ' + btoa(Api.user.mLocationId + ":" + Api.password))
+                }
+
+                return apiHttp(request.payload.path, request.payload.data, request.payload.method || 'POST', headers)
                     .then((data) =>{
                         console.log('request',data)
                         store.dispatch({type:request.type+'_SUCCESS', payload: data })
@@ -26,5 +34,6 @@ const api = (url, port) => {
         })
     };
 };
+
 
 export default api;

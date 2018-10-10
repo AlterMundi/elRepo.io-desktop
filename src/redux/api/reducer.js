@@ -9,6 +9,7 @@ const onlyRepoChannels = (channels=[])  => channels.filter(channel => channel.mG
 
 const initState = {
     login: false,
+    password: "0000",
     runstate: null,
     channels: [],
     cert: null,
@@ -46,7 +47,7 @@ export default function apiReducer(state = initState, action) {
         case 'LOADPEER_INFO_SUCCESS': {
             return {
                 ...state,
-                peersData: state.peers.map(peer => {
+                peers: state.peers.map(peer => {
                     return (peer.id === action.payload.det.id)? action.payload.det: peer;
                 })
             }

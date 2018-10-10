@@ -17,18 +17,24 @@
     "redux": "^4.0.0",
     "redux-saga": "^0.16.0",
     "redux-thunk": "^2.2.0",
+    "sha1-file": "^1.0.1",
     "uuid": "^3.3.0"
   },
   "homepage": "./",
-  "main": "electron-starter.js",
+  "main": "electron/starter.js",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "electron": "electron .",
+    "electron-dev": "ELECTRON_ENABLE_LOGGING=1  ELECTRON_START_URL=http://localhost:3000 electron ."
   },
   "devDependencies": {
-    "babel-plugin-import": "^1.7.0"
+    "babel-plugin-import": "^1.7.0",
+    "electron": "^2.0.2",
+    "electron-devtools-installer": "^2.2.4",
+    "foreman": "^2.0.0"
   },
   "build": {
     "appId": "net.altermundi.repo"

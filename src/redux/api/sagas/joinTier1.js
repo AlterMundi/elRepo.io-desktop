@@ -36,7 +36,7 @@ export const joinTiers = function*() {
         }
     });
     
-    yield takeEvery ('JOIN_TIER_SUCCESS', function*({type, payload = {}}){
+    yield takeEvery (['JOIN_TIER_SUCCESS','ADD_FRIEND'], function*({type, payload = {}}){
         yield  apiHttp.send('api', {
             type: 'ACCEPT_TIER',
             payload: {

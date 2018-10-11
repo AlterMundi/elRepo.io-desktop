@@ -16,7 +16,8 @@ const initState = {
     search: null,
     results: {},
     channelsInfo: {},
-    posts: {}
+    posts: {},
+    promiscuous: true
 }
 
 export default function apiReducer(state = initState, action) {

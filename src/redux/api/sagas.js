@@ -302,4 +302,13 @@ export const discoveryService = function*() {
             console.log({discovery: e})
         }
     })
+
+    let certs = [];
+    yield takeEvery('USER_DISCOVERY_RESULT',function*({type, payload}){
+        const state = yield select(state => state.Api.promiscuous)
+        if(state && certs.indexOf(payload.key) === -1) {
+            yield put({type: 'ADD_FRIEND', payload: {cert: payload.key}})
+            certs = [...certs, payload.key]
+        }
+    })
 }

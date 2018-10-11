@@ -5,6 +5,7 @@ const {ipcMain} = require('electron')
 const sha1File = require('sha1-file')
 const fs = require('fs')
 const path = require('path');
+const { discoveyService } = require('./repo_mdns');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -101,4 +102,11 @@ ipcMain.on('getFilesInfo',(event,{files, cb})=>{
   }
   else
     event.sender.send(cb, {error: 'Files list is undefined'})
+})
+
+ipcMain.on('discovery-start',(event,{ user, key })=>{
+  discoveyService.onUser = (data) => {
+    event.sender.send('discovery-result', data)
+  }
+  discoveyService.serviceStart({user, key})
 })

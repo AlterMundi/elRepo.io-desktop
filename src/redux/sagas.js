@@ -1,6 +1,6 @@
 import { all, fork } from 'redux-saga/effects';
 import { joinTiers } from './api/sagas/joinTier1';
-import { user, channels, peers, search, contentMagnament} from './api/sagas';
+import { user, channels, peers, search, contentMagnament, discoveryService } from './api/sagas';
 export default function* rootSaga() {
   yield all([
     fork(user),
@@ -8,6 +8,7 @@ export default function* rootSaga() {
     fork(peers),
     fork(search),
     fork(joinTiers),
-    fork(contentMagnament)
+    fork(contentMagnament),
+    fork(discoveryService)
   ]);
 }

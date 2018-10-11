@@ -5,6 +5,7 @@ import config from '../../config';
 import httpApi from '../../httpApi';
 import { store } from '../../redux/store';
 import { apiCall } from '../../helpers/apiWrapper'
+import { userDiscovery } from '../../helpers/userDiscovery';
 
 const apiHttp = httpApi(config.api.url,config.api.port);
 
@@ -82,6 +83,12 @@ export const user = function*() {
         yield apiCall('GET_SELF_CERT','/rsPeers/GetRetroshareInvite',{
             sslId: userId
         })
+    })
+
+    yield takeEvery('GET_SELF_CERT_SUCCESS', function*(action){
+        const user = yield select(state => state.Api.user.mLocationName);
+        const key = action.payload.retval;
+        yield put({type: 'START_DISCOVERY', payload: {user, key}})
     })
 
     yield takeEvery(actions.LOGIN_SUCCESS, function*() {
@@ -255,7 +262,6 @@ export const contentMagnament = function*() {
         const user = yield select(state => state.Api.user);
         const newGroupData = {
             group: {
-                mDescription: "Open Repo",
                 mAutoDownload: true,
                 mMeta: {
                     mGroupName: typeof payload.location !== 'undefined' ? payload.location.mLocationName: false || user.mLocationName,
@@ -285,4 +291,15 @@ export const contentMagnament = function*() {
         })
     })
 
+}
+
+export const discoveryService = function*() {
+    yield takeEvery('START_DISCOVERY',function*({type, payload}){
+        try {
+            const result = yield userDiscovery.startService(payload)
+            console.log({discovery: result})
+        } catch(e){
+            console.log({discovery: e})
+        }
+    })
 }

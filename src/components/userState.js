@@ -5,19 +5,26 @@ import { Avatar, Badge } from 'antd'
 class userStateComponent extends Component {
     
     render() {
-        const stateToColor = (runstate) => {
+        const state2Status = (runstate) => {
             switch(runstate) {
                 case true:
-                    return 'green'
+                    return "success"
                 case false:
-                    return 'yellow'
+                    return 'process'
                 default:
-                    return 'red'
+                    return 'error'
             }
         }
         return (
             <div style={{float: 'right', marginRight: '24px'}}>
-                <Badge dot style={{backgroundColor: stateToColor(this.props.runstate)}}><Avatar shape="square" icon="user" /></Badge>
+                <Badge 
+                    dot
+                    status={state2Status(this.props.runstate)}
+                    offset={[20, -5 ]}
+                    style={{borderColor: 'transparent'}}
+                >
+                    <Avatar shape="circle" icon="user" />
+                </Badge>
             </div>
         )
     }

@@ -1,5 +1,28 @@
+body {
+  font-family: 'Roboto', sans-serif;
+
+}
+
 .App {
   text-align: center;
+}
+
+.ant-layout-header {
+  background: #363635;
+  color: #fff;
+}
+
+.ant-layout-sider,
+.ant-menu-dark {
+  background: #363635 !important;
+}
+
+.ant-menu-dark .ant-menu-item-selected>a:hover {
+  color: #000;
+}
+
+.anticon:hover {
+  color: #08b163;
 }
 
 .App-logo {
@@ -23,6 +46,11 @@
 }
 
 @keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }

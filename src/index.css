@@ -1,8 +1,6 @@
-
 body {
   margin: 0;
-  padding: 0;
-  font-family: sans-serif;
+  padding: 0
 }
 
 .trigger {
@@ -14,13 +12,14 @@ body {
 }
 
 .trigger:hover {
-  color: #1890ff;
+  color: #08b163;
 }
 
 .logo {
-  background: rgba(255,255,255,.2);
-  margin: 16px;
+  background: rgba(0, 0, 0, 0.8);
+  margin-bottom: 20px;
+  font-size: 29px;
   padding: 10px;
-  color: #fff;
+  color: #08b163;
   text-align: center;
 }

@@ -13,6 +13,7 @@ class SearchBarComponent extends Component {
           <Search
             placeholder="Title, description..."
             enterButton="Search"
+            size="large"
             style={{margin:'0 20px 0 0'}}
             onSearch={this.props.newSearch}
           />

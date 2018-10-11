@@ -7,7 +7,7 @@ class SideMenuComponent extends Component {
     
     render() {
         return (
-          <Menu theme="light" mode="inline" defaultSelectedKeys={['1']}>
+          <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
             <Menu.Item key="1">
               <Link to={'/'}>
                 <Icon type="video-camera"/>

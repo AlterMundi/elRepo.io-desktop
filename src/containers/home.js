@@ -52,7 +52,7 @@ class Home extends Component {
                     </VisibilitySensor>
                   ))}
                   */}
-                  <h2 style={{fontWeight:'300'}}>Posts</h2>
+                  <h2>Posts</h2>
                   {this.props.posts.map(post => (
                         <Card 
                             key={post.mMeta.mMsgId}

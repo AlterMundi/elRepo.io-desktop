@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import './App.css';
-import 'antd/dist/antd.css'; 
 
 import { Provider } from 'react-redux';
 import { store, history } from './redux/store';
@@ -18,7 +17,7 @@ const { Header, Sider, Content, Footer } = Layout;
 class App extends Component {
   
   state = {
-    collapsed: false,
+    collapsed: true,
   };
 
   toggle = () => {
@@ -45,7 +44,7 @@ class App extends Component {
                 <SideMenu collapsed={this.state.collapsed}/>
               </Sider>
               <Layout>
-                <Header style={{ background: '#fff', padding: 0, display: 'flex', alignItems: 'center'}}>
+                <Header style={{ padding: 0, display: 'flex', alignItems: 'center'}}>
                   <Icon
                     className="trigger"
                     type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}

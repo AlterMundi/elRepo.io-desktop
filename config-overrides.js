@@ -21,8 +21,8 @@ module.exports = function override(config, env) {
             "@disabled-color ": "rgba(0, 0, 0, .25)",            // disable state color
             "@border-radius-base": "2px",                        // major border radius
             "@border-color-base": "#d9d9d9",                     // major border color
-            "@box-shadow-base": "0 2px 8px rgba(0, 0, 0, .15)"  // major shadow for layers
-
+            "@box-shadow-base": "0 2px 8px rgba(0, 0, 0, .15)",  // major shadow for layers
+            "@icon-url": "~/iconfont/iconfont"
         },
         javascriptEnabled: true,
     })(config, env);

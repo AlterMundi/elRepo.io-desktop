@@ -53,7 +53,7 @@ class App extends Component {
                   <SearchBar />
                   <UserState />
                 </Header>
-                <Content style={{ overflowY: 'scroll', margin: '24px 16px', padding: 24, background: '#fff', height: 'calc( 100vh - 145px)' }}>
+                <Content style={{ overflowY: 'scroll', margin: '24px 16px', padding: 24, height: 'calc( 100vh - 145px)' }}>
                   <RepoRouter history={history} />
                 </Content>
               </Layout>

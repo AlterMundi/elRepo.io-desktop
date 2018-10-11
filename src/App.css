@@ -7,6 +7,14 @@ body {
   text-align: center;
 }
 
+.ant-layout {
+  background: #dfe2df;
+}
+
+.ant-layout-content {
+  background: rgba(241, 241, 241, 1)
+}
+
 .ant-layout-header {
   background: #363635;
   color: #fff;

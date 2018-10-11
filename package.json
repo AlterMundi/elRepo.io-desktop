@@ -27,10 +27,12 @@
   "homepage": "./",
   "main": "electron/starter.js",
   "scripts": {
-    "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
-    "test": "rreact-app-rewired test --env=jsdom",
-    "eject": "react-scripts eject",
+    "start": "npm run electron",
+    "start-dev": "nf start -p 3000",
+    "react-start": "react-app-rewired start",
+    "react-build": "react-app-rewired build",
+    "react-test": "rreact-app-rewired test --env=jsdom",
+    "react-eject": "react-scripts eject",
     "electron": "electron .",
     "electron-dev": "ELECTRON_ENABLE_LOGGING=1  ELECTRON_START_URL=http://localhost:3000 electron .",
     "rebuild": "electron-rebuild"
@@ -41,9 +43,6 @@
     "electron-devtools-installer": "^2.2.4",
     "electron-rebuild": "^1.8.2",
     "foreman": "^2.0.0"
-  },
-  "build": {
-    "appId": "net.altermundi.repo"
   },
   "theme": "./src/theme.js"
 }

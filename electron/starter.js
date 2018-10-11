@@ -5,6 +5,7 @@ const {ipcMain} = require('electron')
 const sha1File = require('sha1-file')
 const fs = require('fs')
 const path = require('path');
+const url = require('url')
 const { discoveyService } = require('./repo_mdns');
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -31,7 +32,8 @@ function createWindow () {
     pathname: path.join(__dirname, '/../build/index.html'),
     protocol: 'file:',
     slashes: true
-	});
+  });
+
   mainWindow.loadURL(startUrl)
 
   // Open the DevTools.

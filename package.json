@@ -32,12 +32,14 @@
     "test": "rreact-app-rewired test --env=jsdom",
     "eject": "react-scripts eject",
     "electron": "electron .",
-    "electron-dev": "ELECTRON_ENABLE_LOGGING=1  ELECTRON_START_URL=http://localhost:3000 electron ."
+    "electron-dev": "ELECTRON_ENABLE_LOGGING=1  ELECTRON_START_URL=http://localhost:3000 electron .",
+    "rebuild": "electron-rebuild"
   },
   "devDependencies": {
     "babel-plugin-import": "^1.9.1",
     "electron": "^2.0.2",
     "electron-devtools-installer": "^2.2.4",
+    "electron-rebuild": "^1.8.2",
     "foreman": "^2.0.0"
   },
   "build": {

@@ -2,9 +2,6 @@ var mdns = require('mdns');
 var uuid = require('uuid/v4')
 var net = require('net');
     
-var myServiceId = 'Repo at fh4239v732dj298hc432fd98v' //+ uuid();
-var key = "marcos-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"
-
 var sequence = [
  mdns.rst.DNSServiceResolve(),
 'DNSServiceGetAddrInfo' in mdns.dns_sd ? mdns.rst.DNSServiceGetAddrInfo() : mdns.rst.getaddrinfo({ families: [0] }),
@@ -77,11 +74,12 @@ const startSocket = ({user, key}) => new Promise((res, rej) =>{
     status: false,
     user: {},
     serviceStart: ({ user, key }) => {
+        key = key.replace(/\n/g, "\\n");
         discoveyService.user = { user, key }
         if(discoveyService.status || typeof discoveyService.user.key === 'undefined') return;
-        startSocket({user, key})
+        startSocket(discoveyService.user)
             .then(()=>
-                startBrowser(user)
+                startBrowser(discoveyService.user.user)
             );
         discoveyService.status = true;
     },

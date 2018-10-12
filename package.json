@@ -38,7 +38,7 @@
   "main": "electron/starter.js",
   "scripts": {
     "start": "npm run electron",
-    "start-dev": "concurrently \"BROWSER=none npm run react-start\" \"retroshare-service --base-dir ~/.reposhare\" \"wait-on http://localhost:9092\" \"wait-on http://localhost:3000 && electron .\"",
+    "start-dev": "concurrently \"BROWSER=none npm run react-start\" \"retroshare-service --base-dir ~/.reposhare\" \"wait-on http://localhost:9092\" \"wait-on http://localhost:3000 && ELECTRON_IS_DEV=1 electron .\"",
     "react-start": "react-app-rewired start",
     "react-build": "react-app-rewired build",
     "react-test": "react-app-rewired test --env=jsdom",

@@ -264,6 +264,10 @@ export const search = function*(){
 
 export const contentMagnament = function*() {
     
+    yield takeEvery('START_SYSTEM', function*(){
+        yield apiCall('USER_FOLDERS','/rsFiles/getSharedDirectories')
+    })  
+
     yield takeEvery([actions.CREATE_ACCOUNT_SUCCESS, 'CREATE_USER_CHANNEL'],function*({action, payload={}}){
         console.log(action)
         const user = yield select(state => state.Api.user);
@@ -279,6 +283,7 @@ export const contentMagnament = function*() {
         };
         yield apiCall('CREATE_USER_CHANNEL','/rsGxsChannels/createChannel',newGroupData)
     })
+
 
     yield takeEvery('CREATE_POST', function*(action){
         const user = yield select(state => state.Api.user);

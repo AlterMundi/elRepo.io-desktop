@@ -17,7 +17,8 @@ const initState = {
     results: {},
     channelsInfo: {},
     posts: {},
-    promiscuous: true
+    promiscuous: true,
+    folder: {}
 }
 
 export default function apiReducer(state = initState, action) {
@@ -111,6 +112,13 @@ export default function apiReducer(state = initState, action) {
                     ...action.payload.posts
                         .reduce((prev,act) => ({...prev,[act.mMeta.mMsgId]:act}), {})
                 }
+            }
+        case 'USER_FOLDERS_SUCCESS':
+            return {
+                ...state,
+                folder: action.payload.dirs
+                    .filter(folder => folder.virtualname === 'Downloads')
+                    .reduce((prev,act) => act, {})
             }
         default:
             return state;

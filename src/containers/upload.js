@@ -36,7 +36,7 @@ class UploadView extends Component {
 
     selectFiles() {
         fileUploader.openDialog()
-            .then(fileUploader.getFilesInfo)
+            .then((selected) => fileUploader.shareFiles({files: selected.files, destination: this.props.sharedFolder}))
             .then(filesInfo => this.setState({files: [...filesInfo, ...this.state.files]}))
     }
        
@@ -72,7 +72,9 @@ class UploadView extends Component {
 }
 
 export default connect(
-    state => ({}),
+    state => ({
+        sharedFolder: state.Api.folder.filename,
+    }),
     dispatch => ({
         publish: bindActionCreators(actions.createPost, dispatch)
     })

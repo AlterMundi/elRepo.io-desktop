@@ -86,10 +86,10 @@ const config = {
   shareFolder: '/home/okupa/.reposhare-2/LOC06_1d384e738b5ebac844d39a87725d93c8/Downloads/'
 }
 
-const getFileInfo = (filePath) => new Promise((res, rej)=>{
+const shareFiles = (filePath, destination) => new Promise((res, rej)=>{
   sha1File(filePath, function (error, sum) {
       let fileName = path.basename(filePath)
-      let newPath = config.shareFolder+fileName
+      let newPath = path.join(destination,fileName)
       fs.symlink(filePath, newPath, 'file', console.log);
       res({ 
         fileName: fileName,
@@ -100,9 +100,9 @@ const getFileInfo = (filePath) => new Promise((res, rej)=>{
   })
 })
 
-ipcMain.on('getFilesInfo',(event,{files, cb})=>{
+ipcMain.on('shareFiles',(event,{files, destination, cb})=>{
   if(files.length > 0) {
-    Promise.all(files.map(file => getFileInfo(file))).then(filesInfo =>
+    Promise.all(files.map(file => shareFiles(file, destination))).then(filesInfo =>
       event.sender.send(cb, {
         files: filesInfo
       })

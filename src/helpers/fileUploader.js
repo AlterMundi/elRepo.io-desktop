@@ -1,6 +1,6 @@
 let fileUP = {
     openDialog: ()=> Promise.reject('no electron'),
-    getFilesInfo: ()=> Promise.reject('no electron'),
+    shareFiles: ()=> Promise.reject('no electron'),
 }
 
 if(typeof window.require !== 'undefined') {
@@ -16,10 +16,9 @@ if(typeof window.require !== 'undefined') {
                 res({ files : filesNames})
             }
         }),
-        getFilesInfo: ({files= []}) => new Promise((res,rej)=>{
+        shareFiles: ({files = [], destination}) => new Promise((res,rej)=>{
             const requestCb = uuid()
-            console.warn(requestCb)
-            ipcRenderer.send('getFilesInfo',{files,cb: requestCb});
+            ipcRenderer.send('shareFiles',{files, destination: destination ,cb: requestCb});
             ipcRenderer.once(requestCb,(ev,result)=>{
                 if (!result.error)
                     //-- { files: [{filename:...., hash:...., size:....}] }

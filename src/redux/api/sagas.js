@@ -78,7 +78,7 @@ export const user = function*() {
         })
     });
 
-    yield takeEvery(['SYSTEM_START','GET_SELF_CERT'], function*(){
+    yield takeEvery(['START_SYSTEM','GET_SELF_CERT'], function*(){
         const userId = yield select(state => state.Api.user.mLocationId)
         yield apiCall('GET_SELF_CERT','/rsPeers/GetRetroshareInvite',{
             sslId: userId
@@ -217,15 +217,16 @@ export const peers = function*() {
         joinTier = 1;
         if (typeof action.payload.sslIds !== 'undefined' && action.payload.sslIds.length === 0){
             const api = yield select(state => state.Api)
-            yield put({
-                type: actions.JOIN_TIER,
-                payload: {
-                    url: config.tiers1[0].url,
-                    remote: true,
-                    cert: api.cert,
-                    user: api.user.mLocationName
-                }
-            })
+            if (api.cert)
+                yield put({
+                    type: actions.JOIN_TIER,
+                    payload: {
+                        url: config.tiers1[0].url,
+                        remote: true,
+                        cert: api.cert,
+                        user: api.user.mLocationName
+                    }
+                })
         }
     })
 }

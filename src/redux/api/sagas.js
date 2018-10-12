@@ -78,7 +78,7 @@ export const user = function*() {
         })
     });
 
-    yield takeEvery(['LOGIN_SUCCESS','GET_SELF_CERT'], function*(){
+    yield takeEvery(['SYSTEM_START','GET_SELF_CERT'], function*(){
         const userId = yield select(state => state.Api.user.mLocationId)
         yield apiCall('GET_SELF_CERT','/rsPeers/GetRetroshareInvite',{
             sslId: userId
@@ -91,7 +91,8 @@ export const user = function*() {
         yield put({type: 'START_DISCOVERY', payload: {user, key}})
     })
 
-    yield takeEvery(actions.LOGIN_SUCCESS, function*() {
+    yield takeEvery([actions.LOGIN_SUCCESS], function*() {
+        yield wait(1000) // Graceful wait
         yield put({type: 'START_SYSTEM'})
     });
 }
@@ -104,7 +105,7 @@ export const channels = function*() {
         while(true) {
             const winner = yield race({
                 stopped: take('LOADCHANNEL_CONTENT_STOP'),
-                tick: call(wait, 1222)
+                tick: call(wait, 10000)
             })
 
             if (!winner.stopped) {
@@ -138,6 +139,10 @@ export const channels = function*() {
         //Autosubcrive _repo channels
         let a = 0;
         const user = yield select(state => state.Api.user)
+        if(action.payload.channels.length === 0) {
+            //Create user channel if not exist
+            yield put({type: 'CREATE_USER_CHANNEL'})
+        }
         while(action.payload.channels.length > a) {
             if(
                 //If is open repo channel
@@ -147,11 +152,12 @@ export const channels = function*() {
                 //And not is my channel
                 (action.payload.channels[a].mGroupName !== user.mLocationName)
             ) {
-                yield apiCall('CHANNEL_SUBSCRIVE', '/rsGxsChannels/subscribeToGroup',{
-                    groupId: action.payload.channels[a].mGroupId
-                })
-                yield wait(200)
+                // yield apiCall('CHANNEL_SUBSCRIVE', '/rsGxsChannels/subscribeToGroup',{
+                //     groupId: action.payload.channels[a].mGroupId
+                // })
             }
+            yield wait(1000)
+            
             a++;
         }
     })
@@ -261,7 +267,7 @@ export const contentMagnament = function*() {
         console.log(action)
         const user = yield select(state => state.Api.user);
         const newGroupData = {
-            group: {
+            channel: {
                 mAutoDownload: true,
                 mMeta: {
                     mGroupName: typeof payload.location !== 'undefined' ? payload.location.mLocationName: false || user.mLocationName,
@@ -270,7 +276,7 @@ export const contentMagnament = function*() {
                 }
             }
         };
-        yield apiCall('CREATE_USER_CHANNEL','/rsGxsChannels/createGroup',newGroupData)
+        yield apiCall('CREATE_USER_CHANNEL','/rsGxsChannels/createChannel',newGroupData)
     })
 
     yield takeEvery('CREATE_POST', function*(action){

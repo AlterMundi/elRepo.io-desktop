@@ -1,9 +1,18 @@
 {
   "name": "repo",
   "version": "0.1.0",
+  "author": {
+    "email": "repo@altermundi.net",
+    "name": "AlterMundi",
+    "url": "https://altermuindi.net"
+  },
+  "description": "Open Culture Repository",
   "private": true,
   "dependencies": {
     "antd": "^3.5.3",
+    "concurrently": "^4.0.1",
+    "electron-devtools-installer": "^2.2.4",
+    "electron-is-dev": "^1.0.1",
     "filesize": "^3.6.1",
     "history": "^4.7.2",
     "mdns": "^2.4.0",
@@ -22,16 +31,17 @@
     "redux-thunk": "^2.2.0",
     "roboto-fontface": "^0.10.0",
     "sha1-file": "^1.0.1",
-    "uuid": "^3.3.0"
+    "uuid": "^3.3.0",
+    "wait-on": "^3.1.0"
   },
   "homepage": "./",
   "main": "electron/starter.js",
   "scripts": {
     "start": "npm run electron",
-    "start-dev": "nf start -p 3000",
+    "start-dev": "concurrently \"BROWSER=none npm run react-start\" \"retroshare-service --base-dir ~/.reposhare\" \"wait-on http://localhost:9092\" \"wait-on http://localhost:3000 && electron .\"",
     "react-start": "react-app-rewired start",
     "react-build": "react-app-rewired build",
-    "react-test": "rreact-app-rewired test --env=jsdom",
+    "react-test": "react-app-rewired test --env=jsdom",
     "react-eject": "react-scripts eject",
     "electron": "electron .",
     "electron-dev": "ELECTRON_ENABLE_LOGGING=1  ELECTRON_START_URL=http://localhost:3000 electron .",
@@ -40,9 +50,7 @@
   "devDependencies": {
     "babel-plugin-import": "^1.9.1",
     "electron": "^2.0.2",
-    "electron-devtools-installer": "^2.2.4",
-    "electron-rebuild": "^1.8.2",
-    "foreman": "^2.0.0"
+    "electron-rebuild": "^1.8.2"
   },
   "theme": "./src/theme.js"
 }
